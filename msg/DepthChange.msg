@@ -1,5 +1,5 @@
 Header header
 
-float64 TargetDepth
-time StartTime
-duration Timeout
+float64 target_depth
+time start_time
+duration timeout
