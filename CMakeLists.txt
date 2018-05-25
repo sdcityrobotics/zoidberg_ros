@@ -54,7 +54,7 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
     FILES
-    DepthChange.msg
+#   DepthChange.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -66,10 +66,11 @@ add_message_files(
 
 ## Generate actions in the 'action' folder
 add_action_files(
-#   Directory
-#   action
+    DIRECTORY action
     FILES
-    ChangeDepth.action
+    MoveRobot.action
+#   ChangeDepth.action
+#   ChangeHeading.action
  )
 
 ## Generate added messages and services with any dependencies listed here
