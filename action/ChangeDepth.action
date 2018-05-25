@@ -1,0 +1,8 @@
+# Desired depth
+float32 target_depth
+---
+# Sucesseful result
+float32 end_depth
+---
+# feedback message
+float32 current_depth
