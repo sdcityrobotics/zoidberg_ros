@@ -21,11 +21,21 @@ catkin_make
 ```
 
 Once installed, this package defines a number of ROS messages related to
- navigation and a few ROS nodes. These nodes can be run using the comand
+ navigation and a few ROS nodes. A launch file is used to set up navigation.
 
 ```
-rosrun zoidberg_nav navigation_server.py
+roslaunch zoidberg_nav.launch
 ```
+
+This sets up a node "helm" that sits around and waits for commands
+
+Currently the script
+```
+rosrun zoidberg_nav navigation_client.py
+```
+
+is used to send commands. Since there is no feedback from the sensors it currently just times out
+on all commands, but hopefully that will change soon.
 
 (for the example of the navigation server). Possible scripts avalible to this
 command can be accessed by tab completion, i.e
