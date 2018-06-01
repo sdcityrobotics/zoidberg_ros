@@ -14,48 +14,55 @@ class NavigationServer:
     """Provide basic navigation capabilities"""
     def __init__(self):
         """Setup possible tasks"""
+        # Start up action server ROS node
         self._as = actionlib.SimpleActionServer('zoidberg_nav/move_robot',
                                                    MoveRobotAction,
                                                    execute_cb=self._set_task,
                                                    auto_start=False)
         self._as.start()
-        self.actionID = None
-        rospy.Subscriber("depth", Float64, self._set_curr_depth)
-        rospy.Subscriber("heading", Float64, self._set_curr_heading)
-        self.rcchan = "rc"
-        self.contolp = rospy.Publisher(self.rcchan, ManualControl, queue_size=10)
-        self.pwm_center = 1500
-        self.depth_p = 30
-        self.depth_pmax = 300
-        self.depth_tol = .1
-        self.heading_p = 3
-        self.heading_pmax = 300
-        self.heading_tol = 2
+        # channels where the server looks for necassary information
+        rospy.Subscriber("depth/Float64", Float64, self._set_curr_depth)
+        rospy.Subscriber("heading/Float64", Float64, self._set_curr_heading)
+        # channels where the server publishes control commands
+        self.contolp = rospy.Publisher("Navigation/ManualControl",
+                                       ManualControl,
+                                       queue_size=10)
+        # publish comand rate, Hertz
+        self.rate = rospy.Rate(rospy.get_param('~controller_frequency'))
+        self.pwm_center = 1500.
+        # depth proportional controlled parameters
+        gains = rospy.get_param('~depth')
+        self.depth_p = gains['P']
+        self.depth_pmax = gains['Pmax']
+        self.depth_tol = gains['tolerance']
+        # heading proportional controlled parameters
+        gains = rospy.get_param('~heading')
+        self.heading_p = gains['P']
+        self.heading_pmax = gains['Pmax']
+        self.heading_tol = gains['tolerance']
+        # initilize current state to nonsense values
         self.curr_depth = -1.
         self.curr_heading = -1.
-        self.rate = rospy.Rate(10)
 
 
     def _set_task(self, goal):
         """Parse goal ID and send to correct handler"""
-        self.actionID = goal.actionID
-        if self.actionID == 'change_depth':
+        if goal.actionID == 'change_depth':
             self.change_depth(goal)
-        elif self.actionID == 'change_heading':
+        elif goal.actionID == 'change_heading':
             self.change_heading(goal)
         else:
             rospy.loginfo('%s actionID not recognized'%goal.actionID)
-            self.actionID = None
 
     def change_depth(self, goal):
         """Proportional control to change depth"""
         target_depth = goal.target_depth
-        ddiff = target_depth - self.curr_depth
-        is_success = True
 
-        while abs(ddiff) > self.depth_tol:
+        ddiff = target_depth - self.curr_depth
+
+        while not abs(ddiff) < self.depth_tol:
             # compute proportional controller output
-            pout = ddiff * self.depth_p
+            pout = (target_depth - self.curr_depth) * self.depth_p
             # limit output if necassary
             if abs(pout) > self.depth_pmax:
                 if pout < 0:
@@ -63,9 +70,8 @@ class NavigationServer:
                 else:
                     pout = self.depth_pmax
             if self._as.is_preempt_requested():
-                rospy.loginfo('hello')
+                rospy.loginfo('Dive preempted')
                 self._as.set_preempted()
-                is_success = False
                 break
             pout += self.pwm_center
             # send command to RC channel
@@ -78,11 +84,12 @@ class NavigationServer:
             self.contolp.publish(controlout)
 
             # send command feedback
-            self.send_feedback()
+            self.send_feedback(goal)
             self.rate.sleep()
             ddiff = target_depth - self.curr_depth
 
-        if is_success:
+        # publish a result message when finished
+        if abs(ddiff) < self.depth_tol:
             result = MoveRobotResult(actionID=goal.actionID,
                                      end_depth=target_depth)
             self._as.set_succeeded(result=result)
@@ -90,11 +97,9 @@ class NavigationServer:
 
     def change_heading(self, goal):
         """Proportional control to change heading"""
-        target_heading = goal.target_heading
-        hdiff = target_heading - self.curr_heading
-        is_success = True
+        hdiff = goal.target_heading - self.curr_heading
 
-        while abs(hdiff) > self.heading_tol:
+        while not abs(hdiff) < self.heading_tol:
             # compute proportional controller output
             pout = hdiff * self.heading_p
             # limit output if necassary
@@ -104,7 +109,7 @@ class NavigationServer:
                 else:
                     pout = self.heading_pmax
             if self._as.is_preempt_requested():
-                rospy.loginfo('hello')
+                rospy.loginfo('Turn preempted')
                 self._as.set_preempted()
                 is_success = False
                 break
@@ -119,18 +124,18 @@ class NavigationServer:
             self.contolp.publish(controlout)
 
             # send command feedback
-            self.send_feedback()
+            self.send_feedback(goal)
             self.rate.sleep()
-            hdiff = target_heading - self.curr_heading
+            hdiff = goal.target_heading - self.curr_heading
 
-        if is_success:
+        if abs(hdiff) < self.heading_tol:
             result = MoveRobotResult(actionID=goal.actionID,
                                         end_heading=target_heading)
             self._as.set_succeeded(result=result)
 
-    def send_feedback(self):
+    def send_feedback(self, goal):
         """Send feedback about current robot state"""
-        fb = MoveRobotFeedback(actionID=self.actionID,
+        fb = MoveRobotFeedback(actionID=goal.actionID,
                                current_depth=self.curr_depth,
                                current_heading=self.curr_heading)
         self._as.publish_feedback(fb)

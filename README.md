@@ -6,7 +6,7 @@ Install
 
 This package is installed using catkin_make. Clone this repository into the
 
-    catkin_workspace/src
+    catkin_workspace/src/
 
 directory (fill in catkin_workspace with your specific catkin workspace
 directory). The basic instructions for making the workspace are found in the

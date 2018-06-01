@@ -1,0 +1,16 @@
+<launch>
+    <node name="apm" pkg="mavros" type="mavros_node">
+        <remap from="Navigation/ManualControl" to="manual_control/control"/>
+    </node>
+    <node name="helm" pkg="zoidberg_nav" type="navigation_server.py" respawn="true">
+        <remap from="depth/Float64" to="global_position/rel_alt"/>
+        <remap from="heading/Float64" to="gloabal_position/compass_hdg"/>
+        <param name="controller_frequency" value="10.0" />
+        <param name="depth/P" value="30.0" />
+        <param name="depth/Pmax" value="300." />
+        <param name="depth/tolerance" value=".1" />
+        <param name="heading/P" value="3.0" />
+        <param name="heading/Pmax" value="300." />
+        <param name="heading/tolerance" value="2." />
+    </node>
+</launch>
