@@ -34,8 +34,15 @@ Currently the script
 rosrun zoidberg_nav navigation_client.py
 ```
 
-is used to send commands. Since there is no feedback from the sensors it currently just times out
-on all commands, but hopefully that will change soon.
+is used to send commands. The current mission is meant to turn to a heading. If
+there is a pixhawk attached, the compass is used to construct proportional RC
+commands. These commands can be seen to change on the rc rostopic as the pixhawk
+is moved.
+```
+rostopic echo /apm/rc/out
+```
+The command will exit when the desired and current heading are within a
+ tolerance, or if the timeout is reached.
 
 [RosT1]: http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment
 

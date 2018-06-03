@@ -5,31 +5,30 @@ import rospy
 import actionlib
 import time
 
-
 from zoidberg_nav.msg import MoveRobotAction, MoveRobotResult, MoveRobotFeedback
 from std_msgs.msg import Float64, Header
-from mavros_msgs.msg import ManualControl
+from mavros_msgs.msg import OverrideRCIn
 
 class NavigationServer:
     """Provide basic navigation capabilities"""
     def __init__(self):
         """Setup possible tasks"""
         # Start up action server ROS node
-        self._as = actionlib.SimpleActionServer('zoidberg_nav/move_robot',
+        self._as = actionlib.SimpleActionServer('~move_robot',
                                                    MoveRobotAction,
                                                    execute_cb=self._set_task,
                                                    auto_start=False)
         self._as.start()
         # channels where the server looks for necassary information
-        rospy.Subscriber("depth/Float64", Float64, self._set_curr_depth)
-        rospy.Subscriber("heading/Float64", Float64, self._set_curr_heading)
+        rospy.Subscriber("/depth", Float64, self._set_curr_depth)
+        rospy.Subscriber("/heading", Float64, self._set_curr_heading)
         # channels where the server publishes control commands
-        self.contolp = rospy.Publisher("Navigation/ManualControl",
-                                       ManualControl,
+        self.contolp = rospy.Publisher("/control",
+                                       OverrideRCIn,
                                        queue_size=10)
         # publish comand rate, Hertz
         self.rate = rospy.Rate(rospy.get_param('~controller_frequency'))
-        self.pwm_center = 1500.
+        self.pwm_center = 1500
         # depth proportional controlled parameters
         gains = rospy.get_param('~depth')
         self.depth_p = gains['P']
@@ -40,6 +39,8 @@ class NavigationServer:
         self.heading_p = gains['P']
         self.heading_pmax = gains['Pmax']
         self.heading_tol = gains['tolerance']
+        self.rchannel = 4
+        self.zchannel = 3
         # initilize current state to nonsense values
         self.curr_depth = -1.
         self.curr_heading = -1.
@@ -75,12 +76,9 @@ class NavigationServer:
                 break
             pout += self.pwm_center
             # send command to RC channel
-            h = Header(stamp=rospy.Time.now())
-            controlout = ManualControl(header=h,
-                                        x=self.pwm_center,
-                                        y=self.pwm_center,
-                                        z=pout,
-                                        r=self.pwm_center)
+            channels = [1500] * 8
+            channels[self.zchannel] = pout
+            controlout = OverrideRCIn(channels=channels)
             self.contolp.publish(controlout)
 
             # send command feedback
@@ -88,17 +86,21 @@ class NavigationServer:
             self.rate.sleep()
             ddiff = target_depth - self.curr_depth
 
+        # reset control values
+        channels = [1500] * 8
+        controlout = OverrideRCIn(channels=channels)
+        self.contolp.publish(controlout)
+
         # publish a result message when finished
         if abs(ddiff) < self.depth_tol:
             result = MoveRobotResult(actionID=goal.actionID,
-                                     end_depth=target_depth)
+                                     end_depth=goal.target_depth)
             self._as.set_succeeded(result=result)
 
 
     def change_heading(self, goal):
         """Proportional control to change heading"""
         hdiff = goal.target_heading - self.curr_heading
-
         while not abs(hdiff) < self.heading_tol:
             # compute proportional controller output
             pout = hdiff * self.heading_p
@@ -115,12 +117,9 @@ class NavigationServer:
                 break
             pout += self.pwm_center
             # send command to RC channel
-            h = Header(stamp=rospy.Time.now())
-            controlout = ManualControl(header=h,
-                                        x=self.pwm_center,
-                                        y=self.pwm_center,
-                                        z=self.pwm_center,
-                                        r=pout)
+            channels = [1500] * 8
+            channels[self.rchannel] = pout
+            controlout = OverrideRCIn(channels=channels)
             self.contolp.publish(controlout)
 
             # send command feedback
@@ -128,10 +127,16 @@ class NavigationServer:
             self.rate.sleep()
             hdiff = goal.target_heading - self.curr_heading
 
+        # reset control values
+        channels = [1500] * 8
+        controlout = OverrideRCIn(channels=channels)
+        self.contolp.publish(controlout)
+
         if abs(hdiff) < self.heading_tol:
             result = MoveRobotResult(actionID=goal.actionID,
-                                        end_heading=target_heading)
+                                        end_heading=goal.target_heading)
             self._as.set_succeeded(result=result)
+
 
     def send_feedback(self, goal):
         """Send feedback about current robot state"""
@@ -143,12 +148,12 @@ class NavigationServer:
 
     def _set_curr_depth(self, curr_depth):
         """Set the current depth when it is published"""
-        self.curr_depth = curr_depth
+        self.curr_depth = curr_depth.data
 
 
     def _set_curr_heading(self, curr_heading):
         """Set the current depth when it is published"""
-        self.curr_heading = curr_heading
+        self.curr_heading = curr_heading.data
 
 
 if __name__ == '__main__':
