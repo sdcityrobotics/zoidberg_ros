@@ -39,6 +39,13 @@ roslaunch zoidberg_nav zoidberg_nav.launch
 This sets up a node "helm" that sits around and waits for commands. This command
 will raise a fatal error if there is no Pixhawk attached to the computer.
 
+Ubuntu sets permisions for using serial ports, and if you get an error which ends in Permission Denied, it is probably fixed by adding yourself to the group dialout. 
+```
+sudo usermod -a -G dialout <username>
+```
+Username is found by clicking on the gear on the top right of the Ubuntu screen.
+
+
 Currently the script
 ```
 rosrun zoidberg_nav navigation_client.py
