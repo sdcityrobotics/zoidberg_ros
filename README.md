@@ -10,7 +10,16 @@ This package is installed using catkin_make. Clone this repository into the
 
 directory (fill in catkin_workspace with your specific catkin workspace
 directory). The basic instructions for making the workspace are found in the
-[Ros tutorial][RosT1].
+[Ros tutorial][RosT1]. Permanently source your local catkin workspace in the home .bashrc file. For instance, if you are in you catkin_workspace home folder,
+```
+cd devel
+pwd
+```
+copy the pwd output, and type
+```
+echo "source <pwd output>/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+```
 
 Once the zoiderg_nav package is in place, move to the base catkin_workspace
 and run catkin_make
