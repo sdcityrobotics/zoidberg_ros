@@ -8,6 +8,7 @@ import time
 from zoidberg_nav.msg import MoveRobotAction, MoveRobotResult, MoveRobotFeedback
 from std_msgs.msg import Float64, Header
 from mavros_msgs.msg import OverrideRCIn
+from mavros_msgs.srv import StreamRate
 
 class NavigationServer:
     """Provide basic navigation capabilities"""
@@ -19,6 +20,9 @@ class NavigationServer:
                                                    execute_cb=self._set_task,
                                                    auto_start=False)
         self._as.start()
+        # set pixhawk stream rate to 10 Hz
+        s1 = rospy.ServiceProxy('/apm/set_stream_rate', StreamRate)
+        s1(stream_id=0, message_rate=10, on_off=True)
         # channels where the server looks for necassary information
         rospy.Subscriber("/depth", Float64, self._set_curr_depth)
         rospy.Subscriber("/heading", Float64, self._set_curr_heading)

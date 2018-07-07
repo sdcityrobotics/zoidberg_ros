@@ -43,8 +43,17 @@ Ubuntu sets permisions for using serial ports, and if you get an error which end
 ```
 sudo usermod -a -G dialout <username>
 ```
-Username is found by clicking on the gear on the top right of the Ubuntu screen.
+Username is found by clicking on the gear on the top right of the Ubuntu screen. A restart may be needed after this command to have the changes take effect.
 
+The navigation server uses OverrideRCIn commands to actuate the robots motors. These commands will only translate to actual RC values on the RCOut channel if SYSID_MYGCS matches the Pixhawk system ID. Assuming that the Pixhawk has the default system ID of 1, check the paramter value on the Pixhawk with
+```
+rosrun mavros mavparam -n apm get SYSID_MYGCS
+```
+This can be set to 1 using the get command.
+```
+rosrun mavros mavparam -n apm set SYSID_MYGCS 1
+```
+The above commands only work if zoidberg_nav is launched and running.
 
 Currently the script
 ```

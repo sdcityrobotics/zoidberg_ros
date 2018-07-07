@@ -14,5 +14,4 @@
         <param name="heading/Pmax" value="300." />
         <param name="heading/tolerance" value="2." />
     </node>
-    <node pkg="rosservice" type="rosservice" name="steam_rate" args="call --wait /apm/set_stream_rate 0 10 1"/>
 </launch>
