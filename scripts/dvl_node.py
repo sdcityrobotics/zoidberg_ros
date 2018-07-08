@@ -10,12 +10,11 @@ import serial, time
 # https://pypi.python.org/pypi/pyserial
 from zoidberg_nav.msg import dvl
 
-class DVL_Exception(Exception):
+class DVL_Error(Exception):
     """Custom exception class to indicate problems with the DVL"""
-    def __init__(self, message, errors):
+    def __init__(self, message):
         """Pass along user defined error message"""
-        super().__init__(message)
-        self.errors = errors
+        super(DVL_Error, self).__init__(message)
 
 class DVL:
     """
@@ -36,39 +35,56 @@ class DVL:
         ser.timeout = 10
         ser.open()  # Opens SerialPort
         self.ser = ser  # make serial port persistant
-        self._init_dvl()
-        
 
-    def _init_dvl(self):
+
+    def init_dvl(self):
         """Send startup message to dvl over serial port"""
-        num_trys = 5
         is_start = False
-        print("dvl startup loop")
-        for i in range(num_trys):
-            print("loop number")
-            print(dvlLoopCnt)
-            self.ser.send_break(duration=0.5)
-            time.sleep(0.5)
-            # flush out the buffer
-            print(self.ser.read_all())
-            # send start message
-            self.ser.write(bytes(b'start\r\n'))
-            time.sleep(0.5)
-            # check that first message is valid
-            outputCheck = self.ser.readline()
-            splitLine = outputCheck.split(bytes(b','))
-            if splitLine[0] != b'$DVLNAV':
-                is_start = True
-                break
-        if not is_start:
-            raise(DVL_Exception('Communication not initialized', IOError))
+        # break and then wait before sending start message
+        self.ser.send_break(duration=0.5)
+        time.sleep(0.5)
+        # flush out the buffer
+        buf = self.ser.read_all()
+        # send start message
+        self.ser.write(bytes(b'start\r\n'))
+        time.sleep(0.5)
+        # check that first message is valid
+        outputCheck = self.ser.readline()
+        splitLine = outputCheck.split(bytes(b','))
+        if splitLine[0] == b'$DVLNAV':
+            raise(ConnectionError('Communication not initialized'))
+        # flush out the buffer
+        buf = self.ser.read_all()
+
+
+    def publish_dvl(self):
+        """Start the publishing of dvl messages"""
+        # This should fill in similarly to talker() in:
+        # http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber(python)
+        pass
+
+    def close(self):
+        """Close the serial port"""
+        self.ser.close()
 
 
 
 # Call the Serial Initilization Function, Main Program Starts from here
+if __name__ == '__main__':
+    try:
+        dvl_connection = DVL()
+        dvl_connection.init_dvl()
+        dvl_connection.publish_dvl()
+    except ConnectionError as err:
+        raise(DVL_Error('{0}'.format(err))
+    except rospy.ROSInterruptException:
+        pass
+    # ensure that the COMM port is closed
+    finally:
+        dvl_connection.close()
 
-init_serial()
-init_dvl()
+# This stuff will be moved into the publish_dvl method
+
 errNum = float(9999)
 cnt = 0
 while ser.isOpen():
