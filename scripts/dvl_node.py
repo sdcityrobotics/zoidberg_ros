@@ -8,7 +8,8 @@ This script creates a ROS node which published to the /dvl topic.
 import serial, time
 # Can be Downloaded from this Link
 # https://pypi.python.org/pypi/pyserial
-from zoidberg_nav.msg import dvl
+import rospy
+from zoidberg_nav.msg import DVL
 
 class DVL_Error(Exception):
     """Custom exception class to indicate problems with the DVL"""
@@ -20,7 +21,7 @@ class DVL:
     """
     Persistant object to handle serial comunications with DVL over serial
     """
-    def __init__():
+    def __init__(self):
         """
         Function to Initialize the Serial Port
         """
@@ -32,41 +33,53 @@ class DVL:
         ser.stopbits = serial.STOPBITS_ONE
 
         # Specify the TimeOut in seconds, so that SerialPort doesn't hang
-        ser.timeout = 10
+        ser.timeout = 1
         ser.open()  # Opens SerialPort
         self.ser = ser  # make serial port persistant
+        self.pub = rospy.Publisher('dvl', DVL, queue_size=10)
+        self.rate = rospy.rate(10)  # 10 Hz
+
 
 
     def init_dvl(self):
         """Send startup message to dvl over serial port"""
         is_start = False
         # break and then wait before sending start message
-        self.ser.send_break(duration=0.5)
-        time.sleep(0.5)
-        # flush out the buffer
-        buf = self.ser.read_all()
+        self.ser.send_break(duration=1)
+        time.sleep(1)
         # send start message
         self.ser.write(bytes(b'start\r\n'))
-        time.sleep(0.5)
+        time.sleep(1)
+        # flush out the buffer
+        self.ser.flush()
         # check that first message is valid
         outputCheck = self.ser.readline()
         splitLine = outputCheck.split(bytes(b','))
         if splitLine[0] == b'$DVLNAV':
-            raise(ConnectionError('Communication not initialized'))
-        # flush out the buffer
-        buf = self.ser.read_all()
+            is_start=True
+            return
+        # check that second message is valid
+        outputCheck = self.ser.readline()
+        splitLine = outputCheck.split(bytes(b','))
+        if splitLine[0] == b'$DVLNAV':
+            is_start=True
+            return
+        # if the first two lines don't match raise error
+
+        raise(ConnectionError('Communication not initialized'))
 
 
     def publish_dvl(self):
         """Start the publishing of dvl messages"""
         # This should fill in similarly to talker() in:
         # http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber(python)
-        pass
+        rospy.init_node('dvl_node')
+        while not rospy.is_shutdown():
+            pass
 
     def close(self):
         """Close the serial port"""
         self.ser.close()
-
 
 
 # Call the Serial Initilization Function, Main Program Starts from here

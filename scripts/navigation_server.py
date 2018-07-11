@@ -67,7 +67,7 @@ class NavigationServer:
 
         while not abs(ddiff) < self.depth_tol:
             # compute proportional controller output
-            pout = (target_depth - self.curr_depth) * self.depth_p
+            pout = ddiff * self.depth_p
             # limit output if necassary
             if abs(pout) > self.depth_pmax:
                 if pout < 0:
@@ -159,6 +159,8 @@ class NavigationServer:
         """Set the current depth when it is published"""
         self.curr_heading = curr_heading.data
 
+    def _set_curr_pose(self, dvl_output):
+        """Set the currunt position, velocity and altitude from DVL"""
 
 if __name__ == '__main__':
     rospy.init_node('navigation_server')
