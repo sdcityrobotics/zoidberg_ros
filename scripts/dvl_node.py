@@ -11,12 +11,6 @@ import serial, time
 import rospy
 from zoidberg_nav.msg import DVL
 
-class DVL_Error(Exception):
-    """Custom exception class to indicate problems with the DVL"""
-    def __init__(self, message):
-        """Pass along user defined error message"""
-        super(DVL_Error, self).__init__(message)
-
 class DVL:
     """
     Persistant object to handle serial comunications with DVL over serial
@@ -38,7 +32,6 @@ class DVL:
         self.ser = ser  # make serial port persistant
         self.pub = rospy.Publisher('dvl', DVL, queue_size=10)
         self.rate = rospy.rate(10)  # 10 Hz
-
 
 
     def init_dvl(self):
@@ -79,23 +72,26 @@ class DVL:
 
     def close(self):
         """Close the serial port"""
+        self.ser.send_break(1)
+        self.ser.write(bytes(b'stop\r\n'))
         self.ser.close()
 
 
 # Call the Serial Initilization Function, Main Program Starts from here
 if __name__ == '__main__':
+    dvl_connection = DVL()
     try:
-        dvl_connection = DVL()
         dvl_connection.init_dvl()
         dvl_connection.publish_dvl()
     except ConnectionError as err:
-        raise(DVL_Error('{0}'.format(err))
+        rospy.logerror('Can not connect with DVL')
     except rospy.ROSInterruptException:
         pass
     # ensure that the COMM port is closed
     finally:
         dvl_connection.close()
 
+1/0
 # This stuff will be moved into the publish_dvl method
 
 errNum = float(9999)
