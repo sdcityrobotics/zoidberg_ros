@@ -71,7 +71,7 @@ class NavigationServer:
         """Change the arm state of vehicle, set to Boolean value"""
         self.armer(value=is_armed)
         result = MoveRobotResult(actionID='arm',
-                                 arm=arm)
+                                 arm=is_armed)
         self._as.set_succeeded(result=result)
 
     def set_velocity(self, xvel, yvel):

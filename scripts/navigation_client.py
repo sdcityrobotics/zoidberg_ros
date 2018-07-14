@@ -73,8 +73,9 @@ if __name__ == '__main__':
         rospy.init_node('navigation_client')
         co = Command()
         co.begin()
-        co.change_depth(.3, 3)
-        co.change_heading(280, 100)
+        co.set_velocity(1550, 0, 3)
+        #co.change_depth(.3, 3)
+        #co.change_heading(280, 100)
         #co.change_depth(1.5, 3)
         co.finished()
     except rospy.ROSInterruptException:
