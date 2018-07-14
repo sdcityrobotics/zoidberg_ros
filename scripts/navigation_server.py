@@ -189,5 +189,4 @@ class NavigationServer:
 if __name__ == '__main__':
     rospy.init_node('navigation_server')
     server = NavigationServer()
-    server.arm(True)
     rospy.spin()
