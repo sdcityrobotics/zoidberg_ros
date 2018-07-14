@@ -43,8 +43,22 @@ class Command():
         if not res:
             rospy.loginfo("Heading change timed out")
 
+    def set_velocity(self, xvel, yvel, timeout):
+        """Set fixed velocities"""
+        goal = MoveRobotGoal(actionID='set_velocity',
+                             xvel=xvel,
+                             yvel=yvel)
+        self._ac.send_goal(goal)
+        to = rospy.Duration(secs=timeout)
+        res = self._ac.wait_for_result(to)
+        if not res:
+            rospy.loginfo("Velocity set timed out")
+
     def begin(self):
         """arm vehicle to begin moving"""
+        goal = MoveRobotGoal(actionID='arm', arm=True)
+        self._ac.send_goal(goal)
+        to = rospy.Duration(secs=1.)
         pass
 
     def finished(self):

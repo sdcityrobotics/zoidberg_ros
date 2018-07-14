@@ -44,8 +44,10 @@ class NavigationServer:
         self.heading_p = gains['P']
         self.heading_pmax = gains['Pmax']
         self.heading_tol = gains['tolerance']
-        self.rchannel = 4
         self.zchannel = 3
+        self.rchannel = 4
+        self.xchannel = 5
+        self.ychannel = 6
         # initilize current state to nonsense values
         self.curr_depth = -1.
         self.curr_heading = -1.
@@ -57,6 +59,10 @@ class NavigationServer:
             self.change_depth(goal)
         elif goal.actionID == 'change_heading':
             self.change_heading(goal)
+        elif goal.actionID == 'set_velocity':
+            self.set_velocity(goal.xvel, goal.yvel)
+        elif goal.actionID == 'arm':
+            self.arm(goal.arm)
         else:
             rospy.loginfo('%s actionID not recognized'%goal.actionID)
 
@@ -64,6 +70,17 @@ class NavigationServer:
     def arm(self, is_armed):
         """Change the arm state of vehicle, set to Boolean value"""
         self.armer(value=is_armed)
+        result = MoveRobotResult(actionID='arm',
+                                 arm=arm)
+        self._as.set_succeeded(result=result)
+
+    def set_velocity(self, xvel, yvel):
+        """Simply set the velocity"""
+        channels = [1500] * 8
+        channels[self.xchannel] = xvel
+        channels[self.ychannel] = yvel
+        controlout = OverrideRCIn(channels=channels)
+        self.contolp.publish(controlout)
 
     def change_depth(self, goal):
         """Proportional control to change depth"""
