@@ -68,7 +68,23 @@ class DVL:
         # http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber(python)
         rospy.init_node('dvl_node')
         while not rospy.is_shutdown():
-            pass
+            lineRead = ser.readline()
+            splitLine = lineRead.split(bytes(b','))
+            if not splitLine[0] == b'$DVLNAV': #if string is not DVLNAV go back and read next line
+                continue
+            Vx = float(splitLine[4]) if splitLine[4] else errNum
+            Vy = float(splitLine[5]) if splitLine[5] else errNum
+            Vz = float(splitLine[6]) if splitLine[6] else errNum
+            # no error codes for x,y & alt coordinates, reading starts at 0
+            xCoord = float(splitLine[7])
+            yCoord = float(splitLine[8])
+            altCoord = float(splitLine[9])
+            depthCoord = float(splitLine[10]) if splitLine[10] else errNum
+            msg = DVL(x_velocity = Vx, y_velocity = Vy, z_velocity = Vz, x_position = xCoord, y_position = yCoord, altitude = altCoord)
+            self.ser.real_all()
+            self.pub.publish(msg)
+            rospy.loginfo(msg)
+            self.rate.sleep()
 
     def close(self):
         """Close the serial port"""
@@ -90,48 +106,3 @@ if __name__ == '__main__':
     # ensure that the COMM port is closed
     finally:
         dvl_connection.close()
-
-1/0
-# This stuff will be moved into the publish_dvl method
-
-errNum = float(9999)
-cnt = 0
-while ser.isOpen():
-    cnt = cnt + 1
-    if cnt > 10:
-        ser.send_break(1)
-        ser.write(bytes(b'stop\r\n'))
-        ser.close()
-        print("quitting")
-        break
-    lineRead = ser.readline()
-    splitLine = lineRead.split(bytes(b','))
-
-    if not splitLine[0] == b'$DVLNAV':
-        continue
-    print(splitLine)
-    # get all variables, if no reading, indicate error with 9999
-    Vx = float(splitLine[4]) if splitLine[4] else errNum
-    Vy = float(splitLine[5]) if splitLine[5] else errNum
-    Vz = float(splitLine[6]) if splitLine[6] else errNum
-    # no error codes for x,y & alt coordinates, reading starts at 0
-    xCoord = float(splitLine[7])
-    yCoord = float(splitLine[8])
-    altCoord = float(splitLine[9])
-    depthCoord = float(splitLine[10]) if splitLine[10] else errNum
-
-    # now lets print all data to verify all variables are properly saved
-    print('\n' + "X Velocity: ")
-    print(Vx)
-    print('\n' + "Y Velocity: ")
-    print(Vy)
-    print('\n' + "Z Velocity: ")
-    print(Vz)
-    print('\n' + "X Coordinate: ")
-    print(xCoord)
-    print('\n' + "Y Coordinate: ")
-    print(yCoord)
-    print('\n' + "Altitude: ")
-    print(altCoord)
-    print('\n' + "Depth: ")
-    print(depthCoord)
