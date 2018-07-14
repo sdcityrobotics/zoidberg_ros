@@ -8,7 +8,7 @@ import time
 from zoidberg_nav.msg import MoveRobotAction, MoveRobotResult, MoveRobotFeedback
 from std_msgs.msg import Float64, Header
 from mavros_msgs.msg import OverrideRCIn
-from mavros_msgs.srv import StreamRate
+from mavros_msgs.srv import StreamRate, CommandBool
 
 class NavigationServer:
     """Provide basic navigation capabilities"""
@@ -23,6 +23,7 @@ class NavigationServer:
         # set pixhawk stream rate to 10 Hz
         s1 = rospy.ServiceProxy('/apm/set_stream_rate', StreamRate)
         s1(stream_id=0, message_rate=10, on_off=True)
+        self.armer = rospy.ServiceProxy('/apm/cmd/arming', CommandBool)
         # channels where the server looks for necassary information
         rospy.Subscriber("/depth", Float64, self._set_curr_depth)
         rospy.Subscriber("/heading", Float64, self._set_curr_heading)
@@ -58,6 +59,11 @@ class NavigationServer:
             self.change_heading(goal)
         else:
             rospy.loginfo('%s actionID not recognized'%goal.actionID)
+
+
+    def arm(self, is_armed):
+        """Change the arm state of vehicle, set to Boolean value"""
+        self.armer(value=is_armed)
 
     def change_depth(self, goal):
         """Proportional control to change depth"""
@@ -161,8 +167,10 @@ class NavigationServer:
 
     def _set_curr_pose(self, dvl_output):
         """Set the currunt position, velocity and altitude from DVL"""
+        pass
 
 if __name__ == '__main__':
     rospy.init_node('navigation_server')
     server = NavigationServer()
+    server.arm(True)
     rospy.spin()
