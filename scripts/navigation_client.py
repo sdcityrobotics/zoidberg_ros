@@ -59,12 +59,15 @@ class Command():
         goal = MoveRobotGoal(actionID='arm', arm=True)
         self._ac.send_goal(goal)
         to = rospy.Duration(secs=1.)
+        res = self._ac.wait_for_result(to)
 
     def finished(self):
         """Shut down server"""
         goal = MoveRobotGoal(actionID='arm', arm=False)
         self._ac.send_goal(goal)
         to = rospy.Duration(secs=1.)
+        res = self._ac.wait_for_result(to)
+
         self._ac.cancel_all_goals()
 
 
@@ -73,9 +76,9 @@ if __name__ == '__main__':
         rospy.init_node('navigation_client')
         co = Command()
         co.begin()
-        co.set_velocity(1550, 0, 3)
+        #co.set_velocity(1550, 0, 3)
         #co.change_depth(.3, 3)
-        #co.change_heading(280, 100)
+        co.change_heading(280, 10)
         #co.change_depth(1.5, 3)
         co.finished()
     except rospy.ROSInterruptException:
