@@ -10,6 +10,10 @@ Welcome to Zoidberg_nav's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+    README
+    scrips/navigation_server
+    scrips/navigation_client
+
 
 
 Indices and tables
