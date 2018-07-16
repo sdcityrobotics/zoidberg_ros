@@ -10,9 +10,13 @@ Welcome to Zoidberg_nav's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-    README
-    scrips/navigation_server
-    scrips/navigation_client
+   intro
+
+
+.. automodule:: navigation_server
+
+.. autoclass:: navigation_server.NavigationServer
+.. autoclass:: navigation_client.Command
 
 
 

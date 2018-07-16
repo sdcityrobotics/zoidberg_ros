@@ -17,11 +17,11 @@ message.
 Navigation server is split into a few different classes of behavior based on
  the complexity of the behavior and instruments used in feedback.
 
-The simplest beaviors are prefixed change_. These quantities are directly
+The simplest beaviors end in "change". These quantities are directly
 measured and controlled, as are expected to be most rodust.
 
-change_heading
-change_depth
+heading_change
+depth_change
 
 DVL based behaviors are more complex as they will probably require a sensor
 fussion with a compass. The DVL is capable of measuring rotations, but the
@@ -53,6 +53,7 @@ import actionlib
 import time
 
 from zoidberg_nav.msg import MoveRobotAction, MoveRobotResult, MoveRobotFeedback
+from zoidberg_nav.msg import DVL
 from std_msgs.msg import Float64, Header
 from mavros_msgs.msg import OverrideRCIn
 from mavros_msgs.srv import StreamRate, CommandBool
@@ -102,10 +103,10 @@ class NavigationServer:
 
     def _set_task(self, goal):
         """Parse goal ID and send to correct handler"""
-        if goal.actionID == 'change_depth':
-            self.change_depth(goal)
-        elif goal.actionID == 'change_heading':
-            self.change_heading(goal)
+        if goal.actionID == 'depth_change':
+            self.depth_change(goal)
+        elif goal.actionID == 'heading_change':
+            self.heading_change(goal)
         elif goal.actionID == 'set_velocity':
             self.set_velocity(goal.xvel, goal.yvel)
         elif goal.actionID == 'arm':
@@ -121,18 +122,9 @@ class NavigationServer:
                                  arm=is_armed)
         self._as.set_succeeded(result=result)
 
-    def set_velocity(self, xvel, yvel):
-        """Simply set the velocity"""
-        channels = [1500] * 8
-        channels[self.xchannel] = xvel
-        channels[self.ychannel] = yvel
-        controlout = OverrideRCIn(channels=channels)
-        self.contolp.publish(controlout)
-
-    def change_depth(self, goal):
+    def depth_change(self, goal):
         """Proportional control to change depth"""
         target_depth = goal.target_depth
-
         ddiff = target_depth - self.curr_depth
 
         while not abs(ddiff) < self.depth_tol:
@@ -172,7 +164,7 @@ class NavigationServer:
             self._as.set_succeeded(result=result)
 
 
-    def change_heading(self, goal):
+    def heading_change(self, goal):
         """Proportional control to change heading"""
         hdiff = goal.target_heading - self.curr_heading
         while not abs(hdiff) < self.heading_tol:

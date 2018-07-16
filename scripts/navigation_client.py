@@ -18,11 +18,11 @@ class Command():
                                                  MoveRobotAction)
         self._ac.wait_for_server()
 
-    def change_depth(self, target_depth, timeout):
+    def depth_change(self, target_depth, timeout):
         """command a depth change
             target_depth: depth in meters, positive is down from surface
         """
-        goal = MoveRobotGoal(actionID='change_depth',
+        goal = MoveRobotGoal(actionID='depth_change',
                                target_depth=target_depth)
         self._ac.send_goal(goal)
         to = rospy.Duration(secs=timeout)
@@ -31,11 +31,11 @@ class Command():
             rospy.loginfo("Depth change timed out")
 
 
-    def change_heading(self, target_heading, timeout):
+    def heading_change(self, target_heading, timeout):
         """command a heading change
            target_heading: desired heading in Degrees, true north
         """
-        goal = MoveRobotGoal(actionID='change_heading',
+        goal = MoveRobotGoal(actionID='heading_change',
                                target_heading=target_heading)
         self._ac.send_goal(goal)
         to = rospy.Duration(secs=timeout)
@@ -76,10 +76,9 @@ if __name__ == '__main__':
         rospy.init_node('navigation_client')
         co = Command()
         co.begin()
-        #co.set_velocity(1550, 0, 3)
-        #co.change_depth(.3, 3)
-        co.change_heading(280, 10)
-        #co.change_depth(1.5, 3)
+        #co.depth_change(.3, 3)
+        co.heading_change(280, 10)
+        #co.depth_change(1.5, 3)
         co.finished()
     except rospy.ROSInterruptException:
         rospy.loginfo("Program interrupted")
