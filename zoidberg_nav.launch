@@ -3,6 +3,8 @@
         <remap to="/depth" from="/apm/global_position/rel_alt"/>
         <remap to="/heading" from="/apm/global_position/compass_hdg"/>
         <remap to="/control" from="/apm/rc/override"/>
+        <param name="target_system_id" value="255" />
+        <param name="target_component_id" value="255" />
     </node>
 
     <node name="helm" pkg="zoidberg_nav" type="navigation_server.py" respawn="true">
