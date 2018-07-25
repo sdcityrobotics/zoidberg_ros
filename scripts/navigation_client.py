@@ -77,7 +77,7 @@ if __name__ == '__main__':
         co = Command()
         co.begin()
         #co.depth_change(.3, 3)
-        co.heading_change(280, 10)
+        co.heading_change(280, 100)
         #co.depth_change(1.5, 3)
         co.finished()
     except rospy.ROSInterruptException:

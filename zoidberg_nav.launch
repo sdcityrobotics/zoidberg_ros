@@ -3,17 +3,17 @@
         <remap to="/depth" from="/apm/global_position/rel_alt"/>
         <remap to="/heading" from="/apm/global_position/compass_hdg"/>
         <remap to="/control" from="/apm/rc/override"/>
-        <param name="target_system_id" value="255" />
-        <param name="target_component_id" value="255" />
+        <param name="target_system_id" value="1" />
+        <param name="target_component_id" value="1" />
     </node>
 
     <node name="helm" pkg="zoidberg_nav" type="navigation_server.py" respawn="true">
         <param name="controller_frequency" value="10.0" />
-        <param name="depth/P" value="30.0" />
-        <param name="depth/Pmax" value="300." />
+        <param name="depth/P" value="2.0" />
+        <param name="depth/Pmax" value="200." />
         <param name="depth/tolerance" value=".1" />
-        <param name="heading/P" value="3.0" />
-        <param name="heading/Pmax" value="300." />
+        <param name="heading/P" value="2.0" />
+        <param name="heading/Pmax" value="200." />
         <param name="heading/tolerance" value="2." />
     </node>
 </launch>
