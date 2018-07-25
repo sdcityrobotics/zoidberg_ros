@@ -8,15 +8,14 @@ import cv2
 
 class Zed:
     def __init__(self):
-        self.bridge = CvBridge()
-        self.tasks = Tasks(cv_image)
-        self.pub = rospy.Publisher('objectCoordinates', String, queue_size=10)
-        rospy.init_node('image_objects')
-        
-    def callback(self, idata, objective):
-        cv_image = self.bridge.imgmsg_to_cv2(idata, "bgr8")
-        data = self.tasks.findObject(objective)
-        self.talker(data)
+
+    def callback(self):
+        bridge = CvBridge()
+        cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
+        tasks = Tasks(cv_image)
+        data = tasks.findObject("qualGate")
+        talker(data)
+        #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.header)
 
     def listener(self, task):
 
@@ -25,21 +24,24 @@ class Zed:
         # anonymous=True flag means that rospy will choose a unique
         # name for our 'listener' node so that multiple listeners can
         # run simultaneously.
-        rospy.init_node('zed_listener')
-        cb = lambda idata: self.callback(self, idata, "qualGate")
+        rospy.init_node('listener', anonymous=True)
 
-        rospy.Subscriber("zed/rgb/image_raw_color", Image, cb)
+        rospy.Subscriber("zed/rgb/image_raw_color", Image, callback)
 
         # spin() simply keeps python from exiting until this node is stopped
         rospy.spin()
     
     def talker(self, data):
-        rospy.loginfo(data)
-        self.pub.publish(data)
+        pub = rospy.Publisher('objectCoordinates', String, queue_size=10)
+        rospy.init_node('talker', anonymous=True)
+        rate = rospy.Rate(10) # 10hz
+        while not rospy.is_shutdown():
+            rospy.loginfo(data)
+            pub.publish(data)
+            rate.sleep() 
 
 if __name__ == '__main__':
-    zednnode = Zed()
     try:
-        zednode.listener()
+        listener()
     except rospy.ROSInterruptException:
         pass
