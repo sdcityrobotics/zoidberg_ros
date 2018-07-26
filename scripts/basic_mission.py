@@ -6,16 +6,19 @@ import time
 
 from navigation_client import Command
 
+# setup the command module
+rospy.init_node('navigation_client')
+co = Command()
 
 try:
-    rospy.init_node('navigation_client')
-    co = Command()
+    # start the mission
     co.begin()
-    #co.depth_change(.3, 3)
-    #co.heading_change(280, 1)
-    #co.set_rc_velocity(1550, 1500, 3)
-    co.set_rc_velocity(1500, 1500, 3)
-    #co.depth_change(1.5, 3)
-    co.finished()
+    # mission specifications
+    co.depth_change(.5, 3)
+    co.heading_change(280, 3)
+    co.set_rc_velocity(1550, 1500, 3)
 except rospy.ROSInterruptException:
     rospy.loginfo("Program interrupted")
+finally:
+    # make sure communication is terminated cleanly
+    co.finished()

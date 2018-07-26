@@ -20,7 +20,8 @@ import rospy
 import actionlib
 import time
 
-from zoidberg_nav.msg import MoveRobotAction, MoveRobotResult, MoveRobotFeedback
+from zoidberg_nav.msg import (MoveRobotAction, MoveRobotResult,
+                              MoveRobotFeedback)
 from zoidberg_nav.msg import DVL
 from std_msgs.msg import Float64, Header
 from mavros_msgs.msg import OverrideRCIn
@@ -195,6 +196,11 @@ class NavigationServer:
         controlout = OverrideRCIn(channels=channels)
 
         while True:
+            if self._as.is_preempt_requested():
+                rospy.loginfo('RC set preempted')
+                self._as.set_preempted()
+                break
+
             self.contolp.publish(controlout)
             self.send_feedback(goal)
             self.rate.sleep()
