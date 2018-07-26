@@ -8,12 +8,13 @@
 # 'heading_change'
 # 'set_rcvel'
 # 'arm'
+# 'rc_off'
 string actionID
 # common specifications, may be ignored depending on message type
 float64 target_depth
 float64 target_heading
-float64 x_rc_vel
-float64 y_rc_vel
+int64 x_rc_vel
+int64 y_rc_vel
 bool arm
 ---
 

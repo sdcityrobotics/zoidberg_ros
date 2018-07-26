@@ -7,7 +7,6 @@ Provides basic behaviors used to build up a mission. Designed to be interfaced
 by the Navigation client. The server is the helmsman, the client is the
 captain. Breaking up the mission into a sucsession of basic behaviors makes it
 simpler to ensure that each behavior works as expected.
-
 The server-client terminology is taken from ROS actionlib package, which is
 designed to remove the need for multi-threading programming typically required
 in mission specifications. This is done by having the client provide a
@@ -80,9 +79,11 @@ class NavigationServer:
         elif goal.actionID == 'heading_change':
             self.heading_change(goal)
         elif goal.actionID == 'set_rcvel':
-            self.set_rcvel(goal.xvel, goal.yvel)
+            self.set_rcvel(goal)
         elif goal.actionID == 'arm':
             self.arm(goal.arm)
+        elif goal.actionID == 'rc_off':
+            self.rc_off()
         else:
             rospy.loginfo('%s actionID not recognized'%goal.actionID)
 
@@ -125,38 +126,13 @@ class NavigationServer:
             self.rate.sleep()
             ddiff = target_depth - self.curr_depth
 
-        # reset control values
-        channels = [1500] * 8
-        controlout = OverrideRCIn(channels=channels)
-        self.contolp.publish(controlout)
 
         # publish a result message when finished
         if abs(ddiff) < self.depth_tol:
+            self.rc_off()
             result = MoveRobotResult(actionID=goal.actionID,
                                      end_depth=goal.target_depth)
             self._as.set_succeeded(result=result)
-
-    def set_rcvel(self, goal)
-        """Set a constant velocity to motor"""
-        xrc_cmd = goal.x_rc_vel
-        yrc_cmd = goal.y_rc_vel
-        # check that command velocity is resonable
-        if xrc_cmd > self.pwm_center + self.xdiffmax \
-           or xrc_cmd < self.pwm_center - self.xdiffmax
-            raise(ValueError('x goal velocity must be between %i and %i'%(
-                    self.pwm_center + self.xdiffmax,
-                    self.pwm_center - self.xdiffmax)))
-        if yrc_cmd > self.pwm_center + self.ydiffmax \
-           or yrc_cmd < self.pwm_center - self.ydiffmax
-            raise(ValueError('y goal velocity must be between %i and %i'%(
-                    self.pwm_center + self.ydiffmax,
-                    self.pwm_center - self.ydiffmax)))
-        # send command to RC channel
-        channels = [1500] * 8
-        channels[self.xchannel] = xrc_cmd
-        channels[self.ychannel] = yrc_cmd
-        controlout = OverrideRCIn(channels=channels)
-        self.contolp.publish(controlout)
 
 
     def heading_change(self, goal):
@@ -188,15 +164,52 @@ class NavigationServer:
             self.rate.sleep()
             hdiff = goal.target_heading - self.curr_heading
 
+
+        if abs(hdiff) < self.heading_tol:
+            self.rc_off()
+            result = MoveRobotResult(actionID=goal.actionID,
+                                        end_heading=goal.target_heading)
+            self._as.set_succeeded(result=result)
+
+
+    def set_rcvel(self, goal):
+        """Set a constant velocity to motor"""
+        xrc_cmd = goal.x_rc_vel
+        yrc_cmd = goal.y_rc_vel
+        # check that command velocity is resonable
+        if xrc_cmd > self.pwm_center + self.xdiffmax \
+                or xrc_cmd < self.pwm_center - self.xdiffmax:
+            raise(ValueError('x goal velocity must be between %i and %i'%(
+                    self.pwm_center + self.xdiffmax,
+                    self.pwm_center - self.xdiffmax)))
+        if yrc_cmd > self.pwm_center + self.ydiffmax \
+                or yrc_cmd < self.pwm_center - self.ydiffmax:
+            raise(ValueError('y goal velocity must be between %i and %i'%(
+                    self.pwm_center + self.ydiffmax,
+                    self.pwm_center - self.ydiffmax)))
+
+        # send command to RC channel
+        channels = [1500] * 8
+        channels[self.xchannel] = xrc_cmd
+        channels[self.ychannel] = yrc_cmd
+        controlout = OverrideRCIn(channels=channels)
+
+        while True:
+            self.contolp.publish(controlout)
+            self.send_feedback(goal)
+            self.rate.sleep()
+
+
+    def rc_off(self):
+        """Need to clear rc channel after a goal"""
         # reset control values
         channels = [1500] * 8
         controlout = OverrideRCIn(channels=channels)
         self.contolp.publish(controlout)
+        self.rate.sleep()
+        controlout = OverrideRCIn(channels=channels)
+        self.contolp.publish(controlout)
 
-        if abs(hdiff) < self.heading_tol:
-            result = MoveRobotResult(actionID=goal.actionID,
-                                        end_heading=goal.target_heading)
-            self._as.set_succeeded(result=result)
 
 
     def send_feedback(self, goal):
