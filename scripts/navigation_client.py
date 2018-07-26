@@ -33,7 +33,7 @@ class Command():
 
     def heading_change(self, target_heading, timeout):
         """command a heading change
-           target_heading: desired heading in Degrees, true north
+           target_heading: desired heading in Degrees, magnetic north
         """
         goal = MoveRobotGoal(actionID='heading_change',
                                target_heading=target_heading)

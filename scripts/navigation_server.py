@@ -13,37 +13,6 @@ designed to remove the need for multi-threading programming typically required
 in mission specifications. This is done by having the client provide a
 feedback_callback, which is executed each time the server publishes a feedback
 message.
-
-Navigation server is split into a few different classes of behavior based on
- the complexity of the behavior and instruments used in feedback.
-
-The simplest beaviors end in "change". These quantities are directly
-measured and controlled, as are expected to be most rodust.
-
-heading_change
-depth_change
-
-DVL based behaviors are more complex as they will probably require a sensor
-fussion with a compass. The DVL is capable of measuring rotations, but the
-quality of the position estimate suffers in these cases. Becuase of this, DVL
-based motion will attempt to move with as little rotation as possible.
-
-towaypoint_DVL
-
-Vision based behaviors are prehaps the most comlicated, because it is common to
-combine them with other motions.
-
-centeron_vision
-linefollow_vision
-
-Feedback interrupt behaviors are used stop a behavior when an event occurs.
-
-stoponobject_feedback
-
-Motion injection feedbacks are used to keep the vehicle moving as it is
- preforming another task.
-
-addvelocity_feedback
 """
 
 import roslib
@@ -92,6 +61,9 @@ class NavigationServer:
         self.heading_p = gains['P']
         self.heading_pmax = gains['Pmax']
         self.heading_tol = gains['tolerance']
+        gains = rospy.get_param('~vel')
+        self.xdiffmax = gains['xdiffmax']
+        self.ydiffmax = gains['ydiffmax']
         self.zchannel = 3
         self.rchannel = 4
         self.xchannel = 5
@@ -107,8 +79,8 @@ class NavigationServer:
             self.depth_change(goal)
         elif goal.actionID == 'heading_change':
             self.heading_change(goal)
-        elif goal.actionID == 'set_velocity':
-            self.set_velocity(goal.xvel, goal.yvel)
+        elif goal.actionID == 'set_rcvel':
+            self.set_rcvel(goal.xvel, goal.yvel)
         elif goal.actionID == 'arm':
             self.arm(goal.arm)
         else:
@@ -121,6 +93,7 @@ class NavigationServer:
         result = MoveRobotResult(actionID='arm',
                                  arm=is_armed)
         self._as.set_succeeded(result=result)
+
 
     def depth_change(self, goal):
         """Proportional control to change depth"""
@@ -162,6 +135,28 @@ class NavigationServer:
             result = MoveRobotResult(actionID=goal.actionID,
                                      end_depth=goal.target_depth)
             self._as.set_succeeded(result=result)
+
+    def set_rcvel(self, goal)
+        """Set a constant velocity to motor"""
+        xrc_cmd = goal.x_rc_vel
+        yrc_cmd = goal.y_rc_vel
+        # check that command velocity is resonable
+        if xrc_cmd > self.pwm_center + self.xdiffmax \
+           or xrc_cmd < self.pwm_center - self.xdiffmax
+            raise(ValueError('x goal velocity must be between %i and %i'%(
+                    self.pwm_center + self.xdiffmax,
+                    self.pwm_center - self.xdiffmax)))
+        if yrc_cmd > self.pwm_center + self.ydiffmax \
+           or yrc_cmd < self.pwm_center - self.ydiffmax
+            raise(ValueError('y goal velocity must be between %i and %i'%(
+                    self.pwm_center + self.ydiffmax,
+                    self.pwm_center - self.ydiffmax)))
+        # send command to RC channel
+        channels = [1500] * 8
+        channels[self.xchannel] = xrc_cmd
+        channels[self.ychannel] = yrc_cmd
+        controlout = OverrideRCIn(channels=channels)
+        self.contolp.publish(controlout)
 
 
     def heading_change(self, goal):
@@ -221,9 +216,11 @@ class NavigationServer:
         """Set the current depth when it is published"""
         self.curr_heading = curr_heading.data
 
+
     def _set_curr_pose(self, dvl_output):
         """Set the currunt position, velocity and altitude from DVL"""
         pass
+
 
 if __name__ == '__main__':
     rospy.init_node('navigation_server')

@@ -17,6 +17,9 @@
         <param name="heading/P" value="2.0" />
         <param name="heading/Pmax" value="200." />
         <param name="heading/tolerance" value="2." />
+        <param name="vel/xdiffmax" value="200" />
+        <param name="vel/ydiffmax" value="200" />
+
     </node>
 
     <node pkg="rosbag" type="record" name="zoidberg_bag"
