@@ -24,6 +24,7 @@ from zoidberg_nav.msg import (MoveRobotAction, MoveRobotResult,
                               MoveRobotFeedback)
 from zoidberg_nav.msg import DVL
 from std_msgs.msg import Float64, Header
+from sensor_msgs.msg import FluidPressure
 from mavros_msgs.msg import OverrideRCIn
 from mavros_msgs.srv import StreamRate, CommandBool
 
@@ -42,7 +43,7 @@ class NavigationServer:
         s1(stream_id=0, message_rate=10, on_off=True)
         self.armer = rospy.ServiceProxy('/apm/cmd/arming', CommandBool)
         # channels where the server looks for necassary information
-        rospy.Subscriber("/depth", Float64, self._set_curr_depth)
+        rospy.Subscriber("/depth", FluidPressure, self._set_curr_depth)
         rospy.Subscriber("/heading", Float64, self._set_curr_heading)
         # channels where the server publishes control commands
         self.contolp = rospy.Publisher("/control",
@@ -228,7 +229,7 @@ class NavigationServer:
 
     def _set_curr_depth(self, curr_depth):
         """Set the current depth when it is published"""
-        self.curr_depth = curr_depth.data
+        self.curr_depth = curr_depth.fluid_pressure
 
 
     def _set_curr_heading(self, curr_heading):

@@ -1,12 +1,12 @@
 <launch>
     <node name="apm" pkg="mavros" type="mavros_node">
-        <remap to="/depth" from="/apm/global_position/rel_alt"/>
         <remap to="/heading" from="/apm/global_position/compass_hdg"/>
         <remap to="/control" from="/apm/rc/override"/>
         <remap to="/rcout" from="/apm/rc/out"/>
         <remap to="/power" from="/apm/battery"/>
         <param name="target_system_id" value="1" />
         <param name="target_component_id" value="1" />
+        <param name="gcs_url" value="udp://:14556@127.0.0.1:14550" />
     </node>
 
     <node name="helm" pkg="zoidberg_nav" type="navigation_server.py" respawn="true">
@@ -20,6 +20,9 @@
         <param name="vel/xdiffmax" value="200" />
         <param name="vel/ydiffmax" value="200" />
 
+    </node>
+
+    <node name="pext" pkg="zoidberg_nav" type="pressure_node.py" respawn="true" >
     </node>
 
     <node pkg="rosbag" type="record" name="zoidberg_bag"

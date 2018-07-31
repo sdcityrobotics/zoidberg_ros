@@ -84,7 +84,12 @@ class DVLNode:
             yCoord = float(splitLine[8])
             altCoord = float(splitLine[9])
             depthCoord = float(splitLine[10]) if splitLine[10] else self.errNum
-            msg = DVL(x_velocity = Vx, y_velocity = Vy, z_velocity = Vz, x_position = xCoord, y_position = yCoord, altitude = altCoord)
+            msg = DVL(x_velocity=Vx,
+                      y_velocity=Vy,
+                      z_velocity=Vz,
+                      x_position=xCoord,
+                      y_position=yCoord,
+                      altitude=altCoord)
             self.ser.read_all()
             self.pub.publish(msg)
             rospy.loginfo(msg)
