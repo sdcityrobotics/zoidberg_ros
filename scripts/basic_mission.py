@@ -14,10 +14,9 @@ try:
     # start the mission
     co.begin()
     # mission specifications
-    for i in range(10):
-        co.depth_change(.2, 50)
-        co.heading_change(225, 3)
-        co.set_rc_velocity(1800, 1500, 0.5)
+    co.depth_change(.2, 50)
+    co.heading_change(270, 3)
+    co.set_rc_velocity(1550, 1500, 50)
 except rospy.ROSInterruptException:
     rospy.loginfo("Program interrupted")
 finally:

@@ -122,7 +122,7 @@ class NavigationServer:
             self.rate.sleep()
 
         # publish a result message when finished
-        if abs(ddiff) < self.depth_tol:
+        if abs(target_depth - self.curr_depth) < self.depth_tol:
             self.rc_off()
             result = MoveRobotResult(actionID=goal.actionID,
                                      end_depth=goal.target_depth)
@@ -146,44 +146,53 @@ class NavigationServer:
     def heading_change(self, goal):
         """Proportional control to change heading"""
         #self.mode_setter(base_mode=0, custom_mode='MANUAL')
-        hdiff = goal.target_heading - self.curr_heading
-        while not abs(hdiff) < self.heading_tol:
+        target_heading = goal.target_heading
+        while not abs(target_heading - self.curr_heading) < self.heading_tol:
             # compute proportional controller output
-            pout = hdiff * self.heading_p
-            # limit output if necassary
-            if abs(pout) > self.heading_pmax:
-                if pout < 0:
-                    pout = -self.heading_pmax
-                else:
-                    pout = self.heading_pmax
             if self._as.is_preempt_requested():
                 rospy.loginfo('Turn preempted')
                 self._as.set_preempted()
                 is_success = False
                 break
-            pout += self.pwm_center
+
             # send command to RC channel
             channels = [1500] * 8
-            channels[self.rchannel] = pout
+
+            hout = self._get_heading_pwm(target_heading)
+            channels[self.rchannel] = hout
             controlout = OverrideRCIn(channels=channels)
             self.contolp.publish(controlout)
 
             # send command feedback
             self.send_feedback(goal)
             self.rate.sleep()
-            hdiff = goal.target_heading - self.curr_heading
 
-
-        if abs(hdiff) < self.heading_tol:
+        if abs(target_heading - self.curr_heading) < self.heading_tol:
             self.rc_off()
             result = MoveRobotResult(actionID=goal.actionID,
                                         end_heading=goal.target_heading)
             self._as.set_succeeded(result=result)
 
 
+    def _get_heading_pwm(self, target_heading):
+        """Get PWM to get to desired heading"""
+            hdiff = target_heading - self.curr_heading
+            hout = hdiff * self.heading_p
+            # limit output if necassary
+            if abs(hout) > self.heading_pmax:
+                if hout < 0:
+                    hout = -self.heading_pmax
+                else:
+                    hout = self.heading_pmax
+            hout += self.pwm_center
+            return hout
+
+
     def set_rcvel(self, goal):
         """Set a constant velocity to motor"""
         target_depth = self.curr_depth
+        target_heading = self.target_heading
+
         xrc_cmd = goal.x_rc_vel
         yrc_cmd = goal.y_rc_vel
         #self.mode_setter(base_mode=0, custom_mode='ALT_HOLD')
@@ -205,10 +214,6 @@ class NavigationServer:
         channels = [1500] * 8
         channels[self.xchannel] = xrc_cmd
         channels[self.ychannel] = yrc_cmd
-        zout = self._get_depth_pwm(target_depth)
-        channels[self.zchannel] = zout
-
-        controlout = OverrideRCIn(channels=channels)
 
         while True:
             if self._as.is_preempt_requested():
@@ -216,7 +221,13 @@ class NavigationServer:
                 rospy.loginfo('RC set preempted')
                 self._as.set_preempted()
                 break
+            zout = self._get_depth_pwm(target_depth)
+            channels[self.zchannel] = zout
 
+            hout = self._get_heading_pwm(target_heading)
+            channels[self.rchannel] = hout
+
+            controlout = OverrideRCIn(channels=channels)
             self.contolp.publish(controlout)
             self.send_feedback(goal)
             self.rate.sleep()
