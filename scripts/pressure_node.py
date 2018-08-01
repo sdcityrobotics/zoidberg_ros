@@ -21,7 +21,7 @@ def read_pressure(mav_obj):
     pub = rospy.Publisher('/depth', FluidPressure, queue_size=10)
     rospy.init_node('externalpressure')
     rate = rospy.Rate(10)
-    msg_type = 'SCALED_PRESSURE'
+    msg_type = 'SCALED_PRESSURE2'
 
     msg = mav_obj.recv_match(blocking=True)
     # flush out old data
