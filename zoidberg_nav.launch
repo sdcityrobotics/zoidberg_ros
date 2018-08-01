@@ -11,9 +11,9 @@
 
     <node name="helm" pkg="zoidberg_nav" type="navigation_server.py" respawn="true">
         <param name="controller_frequency" value="10.0" />
-        <param name="depth/P" value="50.0" />
-        <param name="depth/Pmax" value="200." />
-        <param name="depth/tolerance" value=".1" />
+        <param name="depth/P" value="500.0" />
+        <param name="depth/Pmax" value="300." />
+        <param name="depth/tolerance" value=".05" />
         <param name="heading/P" value="2.0" />
         <param name="heading/Pmax" value="200." />
         <param name="heading/tolerance" value="2." />
