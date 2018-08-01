@@ -34,8 +34,9 @@ def read_pressure(mav_obj):
         msg = mav_obj.recv_match(type=msg_type, blocking=True)
         h = Header()
         h.stamp = rospy.Time.now()
+        depth_m = (msg.press_abs - 1014.25) / 100
         fp = FluidPressure(header=h,
-                           fluid_pressure=msg.press_abs,
+                           fluid_pressure=depth_m,
                            variance=0)
         pub.publish(fp)
         rate.sleep()
