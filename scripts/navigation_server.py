@@ -66,7 +66,7 @@ class NavigationServer:
         self.xdiffmax = gains['xdiffmax']
         self.ydiffmax = gains['ydiffmax']
         self.zchannel = 2
-        self.rchannel = 2
+        self.rchannel = 3
         self.xchannel = 4
         self.ychannel = 5
         # initilize current state to nonsense values
