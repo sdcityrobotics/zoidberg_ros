@@ -65,10 +65,10 @@ class NavigationServer:
         gains = rospy.get_param('~vel')
         self.xdiffmax = gains['xdiffmax']
         self.ydiffmax = gains['ydiffmax']
-        self.zchannel = 3
-        self.rchannel = 4
-        self.xchannel = 5
-        self.ychannel = 6
+        self.zchannel = 2
+        self.rchannel = 2
+        self.xchannel = 4
+        self.ychannel = 5
         # initilize current state to nonsense values
         self.curr_depth = -1.
         self.curr_heading = -1.
