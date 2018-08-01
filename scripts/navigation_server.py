@@ -26,7 +26,7 @@ from zoidberg_nav.msg import DVL
 from std_msgs.msg import Float64, Header
 from sensor_msgs.msg import FluidPressure
 from mavros_msgs.msg import OverrideRCIn
-from mavros_msgs.srv import StreamRate, CommandBool
+from mavros_msgs.srv import StreamRate, CommandBool, SetMode
 
 class NavigationServer:
     """Provide basic navigation capabilities"""
@@ -41,6 +41,7 @@ class NavigationServer:
         # set pixhawk stream rate to 10 Hz
         s1 = rospy.ServiceProxy('/apm/set_stream_rate', StreamRate)
         s1(stream_id=0, message_rate=10, on_off=True)
+        self.mode_setter = rospy.ServiceProxy('/apm/set_mode', SetMode)
         self.armer = rospy.ServiceProxy('/apm/cmd/arming', CommandBool)
         # channels where the server looks for necassary information
         rospy.Subscriber("/depth", FluidPressure, self._set_curr_depth)
@@ -100,6 +101,7 @@ class NavigationServer:
 
     def depth_change(self, goal):
         """Proportional control to change depth"""
+        self.mode_setter(base_mode=0, custom_mode='MANUAL')
         target_depth = goal.target_depth
         ddiff = target_depth - self.curr_depth
 
@@ -139,6 +141,7 @@ class NavigationServer:
 
     def heading_change(self, goal):
         """Proportional control to change heading"""
+        self.mode_setter(base_mode=0, custom_mode='MANUAL')
         hdiff = goal.target_heading - self.curr_heading
         while not abs(hdiff) < self.heading_tol:
             # compute proportional controller output
@@ -178,6 +181,8 @@ class NavigationServer:
         """Set a constant velocity to motor"""
         xrc_cmd = goal.x_rc_vel
         yrc_cmd = goal.y_rc_vel
+        self.mode_setter(base_mode=0, custom_mode='DEPTH_HOLD')
+        #self.mode_setter(base_mode=0, custom_mode='STABILIZE')
         # check that command velocity is resonable
         if xrc_cmd > self.pwm_center + self.xdiffmax \
                 or xrc_cmd < self.pwm_center - self.xdiffmax:
@@ -198,6 +203,7 @@ class NavigationServer:
 
         while True:
             if self._as.is_preempt_requested():
+                self.mode_setter(base_mode=0, custom_mode='MANUAL')
                 rospy.loginfo('RC set preempted')
                 self._as.set_preempted()
                 break
