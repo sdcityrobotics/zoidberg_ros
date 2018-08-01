@@ -103,33 +103,23 @@ class NavigationServer:
         """Proportional control to change depth"""
         #self.mode_setter(base_mode=0, custom_mode='MANUAL')
         target_depth = goal.target_depth
-        ddiff = target_depth - self.curr_depth
-
-        while not abs(ddiff) < self.depth_tol:
+        while not abs(target_depth - self.curr_depth) < self.depth_tol:
             # compute proportional controller output
-            pout = ddiff * self.depth_p
-            # limit output if necassary
-            if abs(pout) > self.depth_pmax:
-                if pout < 0:
-                    pout = -self.depth_pmax
-                else:
-                    pout = self.depth_pmax
             if self._as.is_preempt_requested():
                 rospy.loginfo('Dive preempted')
                 self._as.set_preempted()
                 break
-            pout += self.pwm_center
             # send command to RC channel
             channels = [1500] * 8
-            channels[self.zchannel] = pout
+
+            zout = self._get_depth_pwm(goal.target_depth)
+            channels[self.zchannel] = zout
             controlout = OverrideRCIn(channels=channels)
             self.contolp.publish(controlout)
 
             # send command feedback
             self.send_feedback(goal)
             self.rate.sleep()
-            ddiff = target_depth - self.curr_depth
-
 
         # publish a result message when finished
         if abs(ddiff) < self.depth_tol:
@@ -137,6 +127,20 @@ class NavigationServer:
             result = MoveRobotResult(actionID=goal.actionID,
                                      end_depth=goal.target_depth)
             self._as.set_succeeded(result=result)
+
+
+    def _get_depth_pwm(self, target_depth):
+        """Get PWM to get to desired depth"""
+        ddiff = target_depth - self.curr_depth
+        zout = ddiff * self.depth_p
+        # limit output if necassary
+        if abs(zout) > self.depth_pmax:
+            if zout < 0:
+                zout = -self.depth_pmax
+            else:
+                zout = self.depth_pmax
+        zout += self.pwm_center
+        return zout
 
 
     def heading_change(self, goal):
@@ -179,6 +183,7 @@ class NavigationServer:
 
     def set_rcvel(self, goal):
         """Set a constant velocity to motor"""
+        target_depth = self.curr_depth
         xrc_cmd = goal.x_rc_vel
         yrc_cmd = goal.y_rc_vel
         #self.mode_setter(base_mode=0, custom_mode='ALT_HOLD')
@@ -200,6 +205,9 @@ class NavigationServer:
         channels = [1500] * 8
         channels[self.xchannel] = xrc_cmd
         channels[self.ychannel] = yrc_cmd
+        zout = self._get_depth_pwm(target_depth)
+        channels[self.zchannel] = zout
+
         controlout = OverrideRCIn(channels=channels)
 
         while True:
