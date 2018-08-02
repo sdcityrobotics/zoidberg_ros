@@ -8,15 +8,14 @@ import cv2
 class Zed_Listener:
     def __init__(self):
         self.bridge = CvBridge()
-        self.pub = rospy.Publisher('objectCoordinates', String, queue_size=10)
-        rospy.init_node('image_objects')
+        rospy.init_node('zed_listener')
         
     def callback(self, data):
         cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
         cv2.imshow("image", cv_image)
 
     def listener(self):
-        rospy.Subscriber("zed/rgb/image_raw_color", Image, data)
+        rospy.Subscriber("zed/rgb/image_raw_color", Image, callback)
         # spin() simply keeps python from exiting until this node is stopped
         rospy.spin()
 
