@@ -27,8 +27,7 @@ class Zed:
         # anonymous=True flag means that rospy will choose a unique
         # name for our 'listener' node so that multiple listeners can
         # run simultaneously.
-        rospy.init_node('zed_listener')
-        cb = lambda idata: self.callback(self, idata, "qualGate")
+        cb = lambda idata: self.callback(self, idata, task)
 
         rospy.Subscriber("zed/rgb/image_raw_color", Image, cb)
 
@@ -40,8 +39,8 @@ class Zed:
         self.pub.publish(data)
 
 if __name__ == '__main__':
-    zednnode = Zed()
+    zednode = Zed()
     try:
-        zednode.listener()
+        zednode.listener("")
     except rospy.ROSInterruptException:
         pass
