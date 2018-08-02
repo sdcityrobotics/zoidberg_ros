@@ -12,12 +12,15 @@ class Zed_Listener:
         
     def callback(self, data):
         cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-        cv2.imshow("image", cv_image)
+        self.image = cv_image
 
     def listener(self):
-        rospy.Subscriber("zed/rgb/image_raw_color", Image, callback)
+        rospy.Subscriber("zed/rgb/image_raw_color", Image, self.callback)
         # spin() simply keeps python from exiting until this node is stopped
         rospy.spin()
+
+    def getImage(self):
+        return self.image
 
 if __name__ == '__main__':
     zednode = Zed_Listener()
