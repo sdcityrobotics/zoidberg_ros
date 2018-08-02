@@ -23,6 +23,6 @@ class Zed_Listener:
 if __name__ == '__main__':
     zednode = Zed_Listener()
     try:
-        zednode.listener("")
+        zednode.listener()
     except rospy.ROSInterruptException:
         pass
