@@ -176,22 +176,22 @@ class NavigationServer:
 
     def _get_heading_pwm(self, target_heading):
         """Get PWM to get to desired heading"""
-            hdiff = target_heading - self.curr_heading
-            hout = hdiff * self.heading_p
-            # limit output if necassary
-            if abs(hout) > self.heading_pmax:
-                if hout < 0:
-                    hout = -self.heading_pmax
-                else:
-                    hout = self.heading_pmax
-            hout += self.pwm_center
-            return hout
+        hdiff = target_heading - self.curr_heading
+        hout = hdiff * self.heading_p
+        # limit output if necassary
+        if abs(hout) > self.heading_pmax:
+            if hout < 0:
+                hout = -self.heading_pmax
+            else:
+                hout = self.heading_pmax
+        hout += self.pwm_center
+        return hout
 
 
     def set_rcvel(self, goal):
         """Set a constant velocity to motor"""
         target_depth = self.curr_depth
-        target_heading = self.target_heading
+        target_heading = self.curr_heading
 
         xrc_cmd = goal.x_rc_vel
         yrc_cmd = goal.y_rc_vel
