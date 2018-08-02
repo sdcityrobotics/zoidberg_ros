@@ -10,12 +10,12 @@ from zed_listener import Zed_Listener
 zed = Zed_Listener()
 
 try:
-    #while(1):
-    #zed.listener()
     image = zed.getImage()
-    cv2.imshow('image', image)
-    #    if cv2.waitKey(1) & 0xFF == ord('q'):
-    #        break
+    while(1):
+    #zed.listener()
+        cv2.imshow('image', image)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
 except rospy.ROSInterruptException:
     rospy.loginfo("Program interrupted")

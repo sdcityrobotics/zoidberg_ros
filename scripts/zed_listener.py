@@ -21,8 +21,7 @@ class Zed_Listener:
 
     def getImage(self):
         self.listener()
-        while(self.image):
-            return self.image
+        return self.image
 
 if __name__ == '__main__':
     zednode = Zed_Listener()
