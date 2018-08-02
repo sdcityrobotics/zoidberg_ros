@@ -7,15 +7,15 @@ import cv2
 
 from zed_listener import Zed_Listener
 
-rospy.init_node('display_mission')
 zed = Zed_Listener()
 
 try:
-    zed.listener(gate_callback)
+    #while(1):
+    #zed.listener()
+    image = zed.getImage()
+    cv2.imshow('image', image)
+    #    if cv2.waitKey(1) & 0xFF == ord('q'):
+    #        break
+
 except rospy.ROSInterruptException:
     rospy.loginfo("Program interrupted")
-
-def gate_callback(data):
-    cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-    cv2.imshow('image', image)
-    cv2.waitKey(1)
