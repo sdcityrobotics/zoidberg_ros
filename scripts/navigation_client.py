@@ -18,27 +18,16 @@ class Command():
                                                  MoveRobotAction)
         self._ac.wait_for_server()
 
-    def depth_change(self, target_depth, timeout):
-        """command a depth change
-            target_depth: depth in meters, positive is down from surface
+
+    def dh_change(self, target_depth, target_heading, timeout):
         """
-        goal = MoveRobotGoal(actionID='depth_change',
+        command a heading change
+        target_heading: desired heading in Degrees, magnetic north
+        target_depth: desired depth in meters
+        """
+        goal = MoveRobotGoal(actionID='dh_change',
+                               target_heading=target_heading,
                                target_depth=target_depth)
-        self._ac.send_goal(goal)
-        to = rospy.Duration(secs=timeout)
-        res = self._ac.wait_for_result(to)
-        if not res:
-            goal = MoveRobotGoal(actionID='rc_off')
-            self._ac.send_goal(goal)
-            rospy.loginfo("Depth change timed out")
-
-
-    def heading_change(self, target_heading, timeout):
-        """command a heading change
-           target_heading: desired heading in Degrees, magnetic north
-        """
-        goal = MoveRobotGoal(actionID='heading_change',
-                               target_heading=target_heading)
         self._ac.send_goal(goal)
         to = rospy.Duration(secs=timeout)
         res = self._ac.wait_for_result(to)
@@ -47,11 +36,14 @@ class Command():
             self._ac.send_goal(goal)
             rospy.loginfo("Heading change timed out")
 
-    def set_rc_velocity(self, x_rc_vel, y_rc_vel, timeout):
+    def set_rc_velocity(self, x_rc_vel, y_rc_vel,
+                        target_heading, target_depth, timeout):
         """Set fixed velocities"""
         goal = MoveRobotGoal(actionID='set_rcvel',
                              x_rc_vel=x_rc_vel,
-                             y_rc_vel=y_rc_vel)
+                             y_rc_vel=y_rc_vel,
+                             target_heading=target_heading,
+                             target_depth=target_depth)
         self._ac.send_goal(goal)
         to = rospy.Duration(secs=timeout)
         res = self._ac.wait_for_result(to)
@@ -81,8 +73,7 @@ if __name__ == '__main__':
         rospy.init_node('navigation_client')
         co = Command()
         co.begin()
-        #co.depth_change(.3, 1)
-        co.heading_change(30, 20)
+        co.dh_change(0.3, 30, 20)
         #co.set_rc_velocity(1550, 1500, 1)
         #co.depth_change(1.5, 3)
         co.finished()
