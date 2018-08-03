@@ -10,10 +10,11 @@ from zed_listener import Zed_Listener
 zed = Zed_Listener()
 
 try:
-    image = zed.getImage()
     while(1):
-    #zed.listener()
+        image = zed.getImage()
         cv2.imshow('image', image)
+        time.sleep(1)
+        
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
