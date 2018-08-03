@@ -19,6 +19,10 @@
         <param name="heading/tolerance" value="2." />
         <param name="vel/xdiffmax" value="200" />
         <param name="vel/ydiffmax" value="200" />
+        <param name="object/P" value="10" />
+        <param name="object/Pmax" value="300" />
+        <param name="object/framecenter" value="640" />
+        <param name="object/maxwidth" value="1200" />
 
     </node>
 
