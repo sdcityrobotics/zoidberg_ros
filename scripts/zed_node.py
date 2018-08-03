@@ -14,7 +14,6 @@ class ZedListener:
 
     def listen(self):
         rospy.Subscriber("zed/rgb/image_raw_color", Image, self.callback)
-        #rospy.spin()
 
     def getImage(self):
         return self.image

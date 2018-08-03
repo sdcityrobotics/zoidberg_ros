@@ -10,7 +10,7 @@ from zoidberg_nav.msg import VISION
 class MissionTasks:
     def __init__(self):
         self.zedListener = ZedListener()
-	self.zedListener.listen()
+	    self.zedListener.listen()
         self.vision = VisionTasks()
         self.pub = rospy.Publisher('objectCoordinates', VISION, queue_size=10)
         self.rate = None
@@ -18,20 +18,18 @@ class MissionTasks:
     def missionControl(self):
         # THIS CAN BE MOVED TO MAIN CONTROL IF NEEDED
         #find gate
-        self.doTask(300, "gate") #change time as needed
+        self.doTask("gate") #change time as needed
         #find dice
         #self.doTask(300, "dice") #change time as needed
 
-    def doTask(self, iterations, task):
+    def doTask(self, task):
         self.rate = rospy.Rate(10)  # 10 Hz
-        count = 0
-        while count < iterations:
+        while True:
             try:
                 image = self.zedListener.getImage()
-		if image is not None:
+		        if image is not None:
                 	coords = self.processImage(task, image)
                 	self.talk(coords)
-                count += 1
                 self.rate.sleep()
             except rospy.ROSInterruptException:
                 rospy.loginfo("Program interrupted")
@@ -46,9 +44,9 @@ class MissionTasks:
     def talk(self, data):
         #rospy.loginfo(x,y)
         msg = VISION()
-	img, x, y = data
-	cv2.imshow("image", img)
-	cv2.waitKey(1)
+        img, x, y = data
+        cv2.imshow("image", img)
+        cv2.waitKey(1)
         msg.x_coord = x
         msg.y_coord = y
         self.pub.publish(msg)
