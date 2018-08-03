@@ -44,11 +44,12 @@ class MissionTasks:
     def talk(self, data):
         #rospy.loginfo(x,y)
         msg = VISION()
-        img, x, y = data
+        img, x, y, w = data
         cv2.imshow("image", img)
         cv2.waitKey(1)
         msg.x_coord = x
         msg.y_coord = y
+        msg.width = w
         self.pub.publish(msg)
 
 if __name__ == '__main__':
