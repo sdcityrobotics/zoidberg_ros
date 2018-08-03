@@ -4,13 +4,15 @@ import time
 import cv2
 import zed_node
 import vision
+from zoidberg_nav.msg import VISION
+
 
 class MissionTasks:
     def __init__(self):
-        self.zedListener = ZedListener()
-        self.zedTalker = ZedTalker()
         self.vision = Vision()
         self.increment = 1
+        self.pub = rospy.Publisher('objectCoordinates', VISION, queue_size=10)
+
     
     def missionControl(self):
         # THIS CAN BE MOVED TO MAIN CONTROL IF NEEDED
@@ -24,10 +26,9 @@ class MissionTasks:
         count = 0
         while count < seconds:
             try:
-                self.zedListener.listen()
                 image = self.zedListener.getImage()
                 coords = self.processImage(task, image)
-                self.zedTalker.talk(coords)
+                self.talk(coords)
                 count += self.increment
                 time.sleep(self.increment)
             except rospy.ROSInterruptException:
@@ -39,6 +40,14 @@ class MissionTasks:
         elif task == "dice":
             coords = self.vision.findDice(image)
         return coords
+
+    def talk(data):
+        rospy.loginfo(data)
+        msg = VISION()
+        msg.x_coord = data.x
+        msg.y_coord = data.y
+        pub.publish(msg)
+
 
 if __name__ == '__main__':
     rospy.init_node('mission_tasks')
