@@ -104,6 +104,8 @@ class NavigationServer:
         """Proportional control to change depth"""
         target_depth = goal.target_depth
         target_heading = goal.target_heading
+        depth_ok = False
+        heading_ok = False
 
         while not (depth_ok and heading_ok):
             depth_ok = abs(target_depth - self.curr_depth) < self.depth_tol
@@ -288,7 +290,7 @@ class NavigationServer:
     def _get_obj_pwm(self):
         """Get PWM to get to desired depth"""
         odiff = self.framecenter - self.object_x
-        yout = 0diff * self.obj_p
+        yout = odiff * self.obj_p
         # limit output if necassary
         if abs(yout) > self.obj_pmax:
             if yout < 0:

@@ -11,9 +11,9 @@ class VisionTasks:
         edges = cv2.Canny(blurred, th1, th2)
         #self.findBiggestContour(edges)
         x2, y2, w2, h2 = cv2.boundingRect(edges)
-        #centerX = x2 + (w2 / 4)
-	imgh, imgw, imgch = image.shape
-	centerX = imgw / 2
+        centerX = x2 + (w2 / 4)
+	#imgh, imgw, imgch = image.shape
+	#centerX = imgw / 2
         centerY = y2 + (h2 / 2)
         #cv2.circle(image, (int(centerX), int(centerY)), 3, (255, 0, 0), thickness=1, lineType=8, shift=0)
         #cv2.putText(image, "X: " + format(centerX), (int(x2) - 60, int(y2) + 50), font, 0.5, (155, 250, 55), 2,
