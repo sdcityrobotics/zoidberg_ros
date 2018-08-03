@@ -10,17 +10,30 @@ from navigation_client import Command
 rospy.init_node('navigation_client')
 co = Command()
 
-target_heading = 300.
+target_heading1 = 301.
+time_out1 = 55
+target_depth1 = 1
+target_heading2 = 281.
+time_out2 = 115
+target_depth2 = 2
 
 try:
     # start the mission
     rospy.sleep(20.)
     co.begin()
     # mission specifications
-    co.heading_change(target_heading, 20)
-    co.depth_change(1, 20)
-    co.heading_change(target_heading, 20)
-    co.set_rc_velocity(1650, 1500, 60)
+    # first leg
+    co.heading_change(target_heading1, 20)
+    co.depth_change(target_depth1, 20)
+    co.heading_change(target_heading1, 20)
+    co.set_rc_velocity(1650, 1500, time_out1)
+
+    # second leg
+    co.heading_change(target_heading2, 20)
+    co.depth_change(target_depth2, 20)
+    co.heading_change(target_heading2, 20)
+    co.set_rc_velocity(1650, 1500, time_out2)
+
 except rospy.ROSInterruptException:
     rospy.loginfo("Program interrupted")
 finally:
