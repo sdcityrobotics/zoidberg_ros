@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import rospy
 import time
-import cv2
 import zed_node
 import vision
 from zoidberg_nav.msg import VISION
@@ -9,28 +8,29 @@ from zoidberg_nav.msg import VISION
 
 class MissionTasks:
     def __init__(self):
+        self.zedListener = ZedListener()
         self.vision = Vision()
-        self.increment = 1
         self.pub = rospy.Publisher('objectCoordinates', VISION, queue_size=10)
-
+        self.rate = None
     
     def missionControl(self):
         # THIS CAN BE MOVED TO MAIN CONTROL IF NEEDED
         #find gate
-        self.doTask(30, "gate") #change time as needed
+        self.doTask(300, "gate") #change time as needed
         #find dice
-        #self.doTask(30, "dice") #change time as needed
+        #self.doTask(300, "dice") #change time as needed
 
-    def doTask(self, seconds, task):
-        self.task = task
+    def doTask(self, iterations, task):
+        self.rate = rospy.Rate(10)  # 10 Hz
         count = 0
-        while count < seconds:
+        while count < iterations:
             try:
+                self.zedListener.listen()
                 image = self.zedListener.getImage()
                 coords = self.processImage(task, image)
                 self.talk(coords)
-                count += self.increment
-                time.sleep(self.increment)
+                count += 1
+                self.rate.sleep()
             except rospy.ROSInterruptException:
                 rospy.loginfo("Program interrupted")
     
@@ -47,7 +47,6 @@ class MissionTasks:
         msg.x_coord = data.x
         msg.y_coord = data.y
         pub.publish(msg)
-
 
 if __name__ == '__main__':
     rospy.init_node('mission_tasks')
