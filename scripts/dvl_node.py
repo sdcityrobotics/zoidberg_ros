@@ -33,7 +33,7 @@ class DVLNode:
         ser.open()  # Opens SerialPort
         self.ser = ser  # make serial port persistant
         self.pub = rospy.Publisher('dvl', DVL, queue_size=10)
-        self.rate = None
+        self.rate = rospy.Rate(10)  # 10 Hz
 
 
     def init_dvl(self):
@@ -68,10 +68,7 @@ class DVLNode:
 
     def publish_dvl(self):
         """Start the publishing of dvl messages"""
-        # This should fill in similarly to talker() in:
-        # http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber(python)
         rospy.init_node('dvl_node')
-        self.rate = rospy.Rate(10)  # 10 Hz
         while not rospy.is_shutdown():
             lineRead = self.ser.readline()
             splitLine = lineRead.split(bytes(b','))
@@ -91,7 +88,9 @@ class DVLNode:
                       x_position=xCoord,
                       y_position=yCoord,
                       altitude=altCoord)
+            # flush any unread messages from buffer
             self.ser.read_all()
+            # publish current dvl reading
             self.pub.publish(msg)
             rospy.loginfo(msg)
             self.rate.sleep()
