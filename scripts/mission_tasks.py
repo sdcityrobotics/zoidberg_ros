@@ -45,8 +45,8 @@ class MissionTasks:
         #rospy.loginfo(x,y)
         msg = VISION()
         img, x, y, w = data
-        cv2.imshow("image", img)
-        cv2.waitKey(1)
+        #cv2.imshow("image", img)
+        #cv2.waitKey(1)
         msg.x_coord = x
         msg.y_coord = y
         msg.width = w
