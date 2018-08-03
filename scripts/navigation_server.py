@@ -106,6 +106,7 @@ class NavigationServer:
         while not abs(target_depth - self.curr_depth) < self.depth_tol:
             # compute proportional controller output
             if self._as.is_preempt_requested():
+                self.rc_off()
                 rospy.loginfo('Dive preempted')
                 self._as.set_preempted()
                 break
@@ -150,6 +151,7 @@ class NavigationServer:
         while not abs(target_heading - self.curr_heading) < self.heading_tol:
             # compute proportional controller output
             if self._as.is_preempt_requested():
+                self.rc_off()
                 rospy.loginfo('Turn preempted')
                 self._as.set_preempted()
                 is_success = False
@@ -177,6 +179,13 @@ class NavigationServer:
     def _get_heading_pwm(self, target_heading):
         """Get PWM to get to desired heading"""
         hdiff = target_heading - self.curr_heading
+        # handle 0/360 change at magnetic north
+        if abs(hdiff) > 180:
+            if hdiff < 0:
+                hdiff += 360
+            else:
+                hdiff -= 360
+        # p-control
         hout = hdiff * self.heading_p
         # limit output if necassary
         if abs(hout) > self.heading_pmax:
@@ -217,7 +226,7 @@ class NavigationServer:
 
         while True:
             if self._as.is_preempt_requested():
-                #self.mode_setter(base_mode=0, custom_mode='MANUAL')
+                self.rc_off()
                 rospy.loginfo('RC set preempted')
                 self._as.set_preempted()
                 break

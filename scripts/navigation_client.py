@@ -82,8 +82,8 @@ if __name__ == '__main__':
         co = Command()
         co.begin()
         #co.depth_change(.3, 1)
-        #co.heading_change(280, 1)
-        co.set_rc_velocity(1550, 1500, 1)
+        co.heading_change(30, 20)
+        #co.set_rc_velocity(1550, 1500, 1)
         #co.depth_change(1.5, 3)
         co.finished()
     except rospy.ROSInterruptException:
