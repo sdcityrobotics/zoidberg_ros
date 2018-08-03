@@ -114,7 +114,7 @@ class Tasks:
 
         # otherwise, we assume the shape is a circle
         else:
-            shape = "circle"
+            shape = "complex"
 
         # return the name of the shape
         return shape
@@ -129,7 +129,7 @@ class Tasks:
 
             shape = findShape(c)
 
-            if(shape == "square" or shape == "rectangle"):
+            if(shape == "square" or shape == "rectangle" or shape == "complex"):
 
                 x, y, w, h = cv2.boundingRect(c)
 
@@ -154,3 +154,9 @@ class Tasks:
             cY = cY/2
 
         return len(contours), cX, cY
+
+if __name__ == 'main':
+    cap = cv2.videocapture('../video/GOPRO281.mp4')
+    frame, ret = cap
+    tasks = Tasks(frame)
+    data = tasks.findObject("qualGate")
