@@ -10,7 +10,7 @@ from zoidberg_nav.msg import VISION
 class MissionTasks:
     def __init__(self):
         self.zedListener = ZedListener()
-	    self.zedListener.listen()
+	self.zedListener.listen()
         self.vision = VisionTasks()
         self.pub = rospy.Publisher('objectCoordinates', VISION, queue_size=10)
         self.rate = None
@@ -27,7 +27,7 @@ class MissionTasks:
         while True:
             try:
                 image = self.zedListener.getImage()
-		        if image is not None:
+		if image is not None:
                 	coords = self.processImage(task, image)
                 	self.talk(coords)
                 self.rate.sleep()
@@ -45,8 +45,8 @@ class MissionTasks:
         #rospy.loginfo(x,y)
         msg = VISION()
         img, x, y, w = data
-        cv2.imshow("image", img)
-        cv2.waitKey(1)
+        #cv2.imshow("image", img)
+        #cv2.waitKey(1)
         msg.x_coord = x
         msg.y_coord = y
         msg.width = w
