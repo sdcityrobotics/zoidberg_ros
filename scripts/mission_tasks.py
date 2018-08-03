@@ -33,4 +33,10 @@ class MissionTasks:
             # TO-DO: find gate code
         else if task == "dice":
             # TO-DO: find dice code
-            
+
+if __name__ == '__main__':
+    mission = MissionTasks()
+    try:
+        mission.missionControl()
+    except rospy.ROSInterruptException:
+        pass
