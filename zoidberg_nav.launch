@@ -25,6 +25,9 @@
     <node name="pext" pkg="zoidberg_nav" type="pressure_node.py" respawn="true" >
     </node>
 
+    <node name="objects" pkg="zoidberg_nav" type="mission_tasks.py" respawn="true" >
+    </node>
+
     <node pkg="rosbag" type="record" name="zoidberg_bag"
               args="-o zoidberg_bag /rcout /control /depth /heading /power"
     />

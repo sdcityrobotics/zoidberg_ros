@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import time
+import cv2
 from zed_node import ZedListener
 from vision import VisionTasks
 from zoidberg_nav.msg import VISION
@@ -17,7 +18,7 @@ class MissionTasks:
     def missionControl(self):
         # THIS CAN BE MOVED TO MAIN CONTROL IF NEEDED
         #find gate
-        self.doTask(100, "gate") #change time as needed
+        self.doTask(300, "gate") #change time as needed
         #find dice
         #self.doTask(300, "dice") #change time as needed
 
@@ -45,7 +46,9 @@ class MissionTasks:
     def talk(self, data):
         #rospy.loginfo(x,y)
         msg = VISION()
-	x, y = data
+	img, x, y = data
+	cv2.imshow("image", img)
+	cv2.waitKey(1)
         msg.x_coord = x
         msg.y_coord = y
         self.pub.publish(msg)
