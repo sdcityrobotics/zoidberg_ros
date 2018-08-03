@@ -1,22 +1,23 @@
 #!/usr/bin/env python
 import rospy
 import time
-import zed_node
-import vision
+from zed_node import ZedListener
+from vision import VisionTasks
 from zoidberg_nav.msg import VISION
 
 
 class MissionTasks:
     def __init__(self):
         self.zedListener = ZedListener()
-        self.vision = Vision()
+	self.zedListener.listen()
+        self.vision = VisionTasks()
         self.pub = rospy.Publisher('objectCoordinates', VISION, queue_size=10)
         self.rate = None
     
     def missionControl(self):
         # THIS CAN BE MOVED TO MAIN CONTROL IF NEEDED
         #find gate
-        self.doTask(300, "gate") #change time as needed
+        self.doTask(100, "gate") #change time as needed
         #find dice
         #self.doTask(300, "dice") #change time as needed
 
@@ -25,10 +26,10 @@ class MissionTasks:
         count = 0
         while count < iterations:
             try:
-                self.zedListener.listen()
                 image = self.zedListener.getImage()
-                coords = self.processImage(task, image)
-                self.talk(coords)
+		if image is not None:
+                	coords = self.processImage(task, image)
+                	self.talk(coords)
                 count += 1
                 self.rate.sleep()
             except rospy.ROSInterruptException:
@@ -41,12 +42,13 @@ class MissionTasks:
             coords = self.vision.findDice(image)
         return coords
 
-    def talk(data):
-        rospy.loginfo(data)
+    def talk(self, data):
+        #rospy.loginfo(x,y)
         msg = VISION()
-        msg.x_coord = data.x
-        msg.y_coord = data.y
-        pub.publish(msg)
+	x, y = data
+        msg.x_coord = x
+        msg.y_coord = y
+        self.pub.publish(msg)
 
 if __name__ == '__main__':
     rospy.init_node('mission_tasks')

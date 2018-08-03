@@ -56,6 +56,7 @@ add_message_files(
     DIRECTORY msg
     FILES
     DVL.msg
+    VISION.msg
 #   DepthChange.msg
 )
 

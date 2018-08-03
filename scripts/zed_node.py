@@ -6,6 +6,7 @@ from cv_bridge import CvBridge
 class ZedListener:
     def __init__(self):
         self.bridge = CvBridge()
+	self.image = None
 
     def callback(self, data):
         cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
@@ -13,8 +14,7 @@ class ZedListener:
 
     def listen(self):
         rospy.Subscriber("zed/rgb/image_raw_color", Image, self.callback)
-        rospy.spinOnce()
+        #rospy.spin()
 
     def getImage(self):
-        self.listener()
         return self.image

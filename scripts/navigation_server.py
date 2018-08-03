@@ -22,7 +22,7 @@ import time
 
 from zoidberg_nav.msg import (MoveRobotAction, MoveRobotResult,
                               MoveRobotFeedback)
-from zoidberg_nav.msg import DVL
+from zoidberg_nav.msg import DVL, VISION
 from std_msgs.msg import Float64, Header
 from sensor_msgs.msg import FluidPressure
 from mavros_msgs.msg import OverrideRCIn
@@ -46,6 +46,7 @@ class NavigationServer:
         # channels where the server looks for necassary information
         rospy.Subscriber("/depth", FluidPressure, self._set_curr_depth)
         rospy.Subscriber("/heading", Float64, self._set_curr_heading)
+	rospy.Subscriber("/objectCoordinates", VISION, self._set_object_coords)
         # channels where the server publishes control commands
         self.contolp = rospy.Publisher("/control",
                                        OverrideRCIn,
@@ -73,6 +74,8 @@ class NavigationServer:
         # initilize current state to nonsense values
         self.curr_depth = -1.
         self.curr_heading = -1.
+	self.object_x = -1.
+	self.object_y = -1.
 
 
     def _set_task(self, goal):
@@ -260,6 +263,12 @@ class NavigationServer:
                                current_depth=self.curr_depth,
                                current_heading=self.curr_heading)
         self._as.publish_feedback(fb)
+
+
+    def _set_object_coords(self, object_coords):
+        """Set object x and y coordinates"""
+	self.object_x = object_coords.x_coord
+	self.object_y = object_coords.y_coord
 
 
     def _set_curr_depth(self, curr_depth):
