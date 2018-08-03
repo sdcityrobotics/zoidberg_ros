@@ -17,7 +17,7 @@ try:
     # mission specifications
     co.dh_change(.2, 270, 20)
     #co.heading_change(300, 20)
-    co.set_rc_velocity(1600, 1500, 270, .2, 5)
+    co.set_rc_velocity(1600, 1500, .2, 270, 5)
 except rospy.ROSInterruptException:
     rospy.loginfo("Program interrupted")
 finally:

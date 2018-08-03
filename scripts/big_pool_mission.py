@@ -24,11 +24,11 @@ try:
     # mission specifications
     # first leg
     co.dh_change(target_depth1, target_heading1, 20)
-    co.set_rc_velocity(1650, 1500, target_heading1, target_depth1, time_out1)
+    co.set_rc_velocity(1650, 1500, target_depth1, target_heading1, time_out1)
 
     # second leg
     co.dh_change(target_depth2, target_heading2, 20)
-    co.set_rc_velocity(1650, 1500, target_heading2, target_depth2, time_out2)
+    co.set_rc_velocity(1650, 1500, target_depth2, target_heading2, time_out2)
 
 except rospy.ROSInterruptException:
     rospy.loginfo("Program interrupted")

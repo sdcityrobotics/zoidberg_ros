@@ -107,6 +107,9 @@ class NavigationServer:
         depth_ok = False
         heading_ok = False
 
+        # initialize empty RC command
+        channels = [1500] * 8
+
         while not (depth_ok and heading_ok):
             depth_ok = abs(target_depth - self.curr_depth) < self.depth_tol
             heading_ok = abs(target_heading - self.curr_heading)\
@@ -117,11 +120,9 @@ class NavigationServer:
                 rospy.loginfo('DH preempted')
                 self._as.set_preempted()
                 break
-            # send command to RC channel
-            channels = [1500] * 8
 
             # compute heading and depth changes
-            zout = self._get_depth_pwm(goal.target_depth)
+            zout = self._get_depth_pwm(target_depth)
             hout = self._get_heading_pwm(target_heading)
 
             channels[self.zchannel] = zout
