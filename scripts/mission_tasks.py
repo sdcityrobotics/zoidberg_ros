@@ -3,13 +3,14 @@ import rospy
 import time
 import cv2
 import zed_node
-
+import vision
 
 class MissionTasks:
     def __init__(self):
         self.zedListener = ZedListener()
         self.zedListener.listen()
         self.zedTalker = ZedTalker()
+        self.vision = Vision()
     
     def missionControl(self):
         # THIS CAN BE MOVED TO MAIN CONTROL IF NEEDED
@@ -30,9 +31,10 @@ class MissionTasks:
     
     def processImage(self, task, image):
         if task == "gate":
-            # TO-DO: find gate code
+            (x,y) = self.vision.findGate(image)
         else if task == "dice":
-            # TO-DO: find dice code
+            (x,y) = self.vision.findDice(image)
+        return (x,y)
 
 if __name__ == '__main__':
     mission = MissionTasks()
