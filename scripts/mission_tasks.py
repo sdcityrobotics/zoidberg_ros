@@ -40,6 +40,7 @@ class MissionTasks:
         return (x,y)
 
 if __name__ == '__main__':
+    rospy.init_node('mission_tasks')
     mission = MissionTasks()
     try:
         mission.missionControl()
