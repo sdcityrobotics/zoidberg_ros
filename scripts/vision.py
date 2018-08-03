@@ -12,7 +12,9 @@ class Vision:
         x2, y2, w2, h2 = cv2.boundingRect(edges)
         centerX = x2 + (w2 / 2)
         centerY = y2 + (h2 / 2)
-        return (centerX, centerY)
+        coords.x = centerX
+        coords.y = centerY
+        return coords
 
 
     def findBiggestContour(mask):

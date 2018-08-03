@@ -8,9 +8,9 @@ import vision
 class MissionTasks:
     def __init__(self):
         self.zedListener = ZedListener()
-        self.zedListener.listen()
         self.zedTalker = ZedTalker()
         self.vision = Vision()
+        self.increment = 1
     
     def missionControl(self):
         # THIS CAN BE MOVED TO MAIN CONTROL IF NEEDED
@@ -24,20 +24,21 @@ class MissionTasks:
         count = 0
         while count < seconds:
             try:
+                self.zedListener.listen()
                 image = self.zedListener.getImage()
                 coords = self.processImage(task, image)
                 self.zedTalker.talk(coords)
-                count += 1
-                time.sleep(1)
+                count += self.increment
+                time.sleep(self.increment)
             except rospy.ROSInterruptException:
                 rospy.loginfo("Program interrupted")
     
     def processImage(self, task, image):
         if task == "gate":
-            (x,y) = self.vision.findGate(image)
-        else if task == "dice":
-            (x,y) = self.vision.findDice(image)
-        return (x,y)
+            coords = self.vision.findGate(image)
+        elif task == "dice":
+            coords = self.vision.findDice(image)
+        return coords
 
 if __name__ == '__main__':
     rospy.init_node('mission_tasks')

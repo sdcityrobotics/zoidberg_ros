@@ -4,6 +4,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from std_msgs.msg import String, Header
 import cv2
+from zoidberg_nav.msg import vision
 
 class ZedListener:
     def __init__(self):
@@ -15,8 +16,7 @@ class ZedListener:
 
     def listen(self):
         rospy.Subscriber("zed/rgb/image_raw_color", Image, self.callback)
-        # spin() simply keeps python from exiting until this node is stopped
-        rospy.spin()
+        rospy.spinOnce()
 
     def getImage(self):
         self.listener()
@@ -28,4 +28,7 @@ class ZedTalker:
 
     def talk(data):
         rospy.loginfo(data)
-        pub.publish(data)
+        msg = vision()
+        msg.x_coord = data.x
+        msg.y_coord = data.y
+        pub.publish(msg)
