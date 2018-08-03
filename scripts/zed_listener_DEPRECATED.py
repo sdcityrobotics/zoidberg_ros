@@ -12,7 +12,9 @@ class Zed_Listener:
         
     def callback(self, data):
         cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-        self.image = cv_image
+        #self.image = cv_image
+        cv2.imshow('frame', cv_image)
+        cv2.waitKey(1)
 
     def listener(self):
         rospy.Subscriber("zed/rgb/image_raw_color", Image, self.callback)

@@ -16,6 +16,8 @@ class MissionTasks:
         # THIS CAN BE MOVED TO MAIN CONTROL IF NEEDED
         #find gate
         self.doTask(30, "gate") #change time as needed
+        #find dice
+        #self.doTask(30, "dice") #change time as needed
 
     def doTask(self, seconds, task):
         self.task = task
@@ -25,6 +27,7 @@ class MissionTasks:
                 image = self.zedListener.getImage()
                 coords = self.processImage(task, image)
                 self.zedTalker.talk(coords)
+                count += 1
                 time.sleep(1)
             except rospy.ROSInterruptException:
                 rospy.loginfo("Program interrupted")
