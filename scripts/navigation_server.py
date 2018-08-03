@@ -67,6 +67,12 @@ class NavigationServer:
         gains = rospy.get_param('~vel')
         self.xdiffmax = gains['xdiffmax']
         self.ydiffmax = gains['ydiffmax']
+        gains = rospy.get_param('~object')
+        self.obj_p = gains['P']
+        self.obj_pmax = gains['Pmax']
+        self.framecenter = gains['framecenter']
+        self.maxwidth = gains['maxwidth']
+        self.objcycles = 50
         self.zchannel = 2
         self.rchannel = 3
         self.xchannel = 4
@@ -184,6 +190,8 @@ class NavigationServer:
         target_depth = goal.target_depth
         target_heading = goal.target_heading
         xrc_cmd = goal.x_rc_vel
+        isclose = False  # if true just go for the gate
+        count = 0
 
         # check that command velocity is resonable
         if xrc_cmd > self.pwm_center + self.xdiffmax \
@@ -216,8 +224,19 @@ class NavigationServer:
             channels[self.zchannel] = zout
             channels[self.rchannel] = hout
 
-            # center on the object
-            channels[self.ychannel] = yrc_cmd
+            if self.object_width > self.maxwidth:
+                isclose = True
+
+            if not isclose:
+                # center on the object
+                yrc_cmd = self._get_obj_pwm()
+                channels[self.ychannel] = yrc_cmd
+            else:
+                channels[self.ychannel] = 1500
+                count += 1
+
+            if count > self.objcycles:
+                break
 
             controlout = OverrideRCIn(channels=channels)
             self.contolp.publish(controlout)
@@ -266,6 +285,19 @@ class NavigationServer:
         return zout
 
 
+    def _get_obj_pwm(self):
+        """Get PWM to get to desired depth"""
+        odiff = self.framecenter - self.object_x
+        yout = 0diff * self.obj_p
+        # limit output if necassary
+        if abs(yout) > self.obj_pmax:
+            if yout < 0:
+                yout = -self.obj_pmax
+            else:
+                yout = self.obj_pmax
+        yout += self.pwm_center
+        return yout
+
     def _get_heading_pwm(self, target_heading):
         """Get PWM to get to desired heading"""
         hdiff = target_heading - self.curr_heading
@@ -287,12 +319,11 @@ class NavigationServer:
         return hout
 
 
-
-
     def _set_object_coords(self, object_coords):
         """Set object x and y coordinates"""
 	self.object_x = object_coords.x_coord
 	self.object_y = object_coords.y_coord
+	self.object_width = object_coords.width
 
 
     def _set_curr_depth(self, curr_depth):
