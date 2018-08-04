@@ -33,6 +33,6 @@
     </node>
 
     <node pkg="rosbag" type="record" name="zoidberg_bag"
-              args="-o zoidberg_bag /rcout /control /depth /heading /power"
+              args="-o zoidberg_bag /rcout /dvl /control /depth /heading /power"
     />
 </launch>

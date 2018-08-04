@@ -104,6 +104,11 @@ class NavigationServer:
         """Proportional control to change depth"""
         target_depth = goal.target_depth
         target_heading = goal.target_heading
+        depth_ok = False
+        heading_ok = False
+
+        # initialize empty RC command
+        channels = [1500] * 8
 
         while not (depth_ok and heading_ok):
             depth_ok = abs(target_depth - self.curr_depth) < self.depth_tol
@@ -115,11 +120,9 @@ class NavigationServer:
                 rospy.loginfo('DH preempted')
                 self._as.set_preempted()
                 break
-            # send command to RC channel
-            channels = [1500] * 8
 
             # compute heading and depth changes
-            zout = self._get_depth_pwm(goal.target_depth)
+            zout = self._get_depth_pwm(target_depth)
             hout = self._get_heading_pwm(target_heading)
 
             channels[self.zchannel] = zout
@@ -288,7 +291,7 @@ class NavigationServer:
     def _get_obj_pwm(self):
         """Get PWM to get to desired depth"""
         odiff = self.framecenter - self.object_x
-        yout = 0diff * self.obj_p
+        yout = odiff * self.obj_p
         # limit output if necassary
         if abs(yout) > self.obj_pmax:
             if yout < 0:

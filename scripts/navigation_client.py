@@ -26,8 +26,8 @@ class Command():
         target_depth: desired depth in meters
         """
         goal = MoveRobotGoal(actionID='dh_change',
-                               target_heading=target_heading,
-                               target_depth=target_depth)
+                             target_heading=target_heading,
+                             target_depth=target_depth)
         self._ac.send_goal(goal)
         to = rospy.Duration(secs=timeout)
         res = self._ac.wait_for_result(to)
@@ -36,8 +36,8 @@ class Command():
             self._ac.send_goal(goal)
             rospy.loginfo("Heading change timed out")
 
-    def set_rc_velocity(self, x_rc_vel, y_rc_vel,target_heading,
-            target_depth, timeout):
+    def set_rc_velocity(self, x_rc_vel, y_rc_vel, target_depth,
+                        target_heading, timeout):
         """Set fixed velocities"""
         goal = MoveRobotGoal(actionID='set_rcvel',
                              x_rc_vel=x_rc_vel,

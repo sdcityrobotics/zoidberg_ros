@@ -32,8 +32,6 @@ class VisionTasks:
         return (image, centerX, centerY, w)
 
 
-
-    # ----------------------------------------------------------------------------------------------------------------------
     def findBiggestContour(self, mask):
        # Contours
        contoursArray = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
