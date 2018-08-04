@@ -19,7 +19,7 @@ class ZedListener:
     
     def listen(self):
         rospy.Subscriber("zed/rgb/image_raw_color", Image, self.callback)
-        #rospy.Subscriber("zed/depth/depth_registered", Image, self.callbackDepth)
+        rospy.Subscriber("zed/depth/depth_registered", Image, self.callbackDepth)
 
     def getImage(self):
         return self.image
