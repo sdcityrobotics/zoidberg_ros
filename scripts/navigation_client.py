@@ -62,11 +62,14 @@ class Command():
         self._ac.send_goal(goal)
         to = rospy.Duration(secs=timeout)
         res = self._ac.wait_for_result(to)
+        is_togate = True
+
         if not res:
+            is_togate=False
             goal = MoveRobotGoal(actionID='rc_off')
             self._ac.send_goal(goal)
             rospy.loginfo("Gate pass set timed out")
-
+        return is_togate
 
     def begin(self):
         """arm vehicle to begin moving"""

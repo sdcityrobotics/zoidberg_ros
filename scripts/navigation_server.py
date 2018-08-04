@@ -78,10 +78,10 @@ class NavigationServer:
         self.xchannel = 4
         self.ychannel = 5
         # initilize current state to nonsense values
-        self.curr_depth = -1.
-        self.curr_heading = -1.
-	self.object_x = -1.
-	self.object_y = -1.
+        self.curr_depth = -9999,
+        self.curr_heading = -9999.
+	self.object_x = -9999.
+	self.object_y = -9999.
         self.x_velocity = 9999
         self.y_velocity = 9999
         self.altitude = 9999
@@ -141,9 +141,7 @@ class NavigationServer:
 
         cms = lambda s, g: self.depth_heading_rc(g)
         is_term = lambda s, g: self.depth_heading_isterm(g)
-        self.behavior_loop(goal,
-                           cms,
-                           is_term)
+        self.behavior_loop(goal, cms, is_term)
 
     def set_rcvel(self, goal):
         """Move with constant velocity holding depth and heading"""
@@ -235,6 +233,9 @@ class NavigationServer:
     def get_depth_pwm(self, goal):
         """Get PWM to get to desired depth"""
         ddiff = goal.target_depth - self.curr_depth
+        if zout > 0:
+            rospy.loginfo('Depth sensor is not initialized')
+            return self.pwm_center
         zout = ddiff * self.depth_p
         # limit output if necassary
         if abs(zout) > self.depth_pmax:
