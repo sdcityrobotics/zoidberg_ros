@@ -77,13 +77,12 @@ class NavigationServer:
         self.xchannel = 4
         self.ychannel = 5
         # initilize current state to nonsense values
-        self.curr_depth = -9999,
+        self.curr_depth = -9999
         self.curr_heading = -9999.
 	self.object_x = -9999.
 	self.object_y = -9999.
         self.object_width = -9999
         self.object_depth = -9999
-
         self.x_velocity = 9999
         self.y_velocity = 9999
         self.altitude = 9999
@@ -163,13 +162,10 @@ class NavigationServer:
 
     def gate_pass(self, goal):
         """Center on gate untill it reaches a size threshold"""
-        is_term = lambda g: True
-        xrc_cmd = goal.x_rc_vel
-
         def rc_to_obj(self, goal):
             """Add constant rc commands to depth and heading hold"""
             channels = self.depth_heading_rc(goal)
-            channels[self.xchannel] = xrc_cmd
+            channels[self.xchannel] = goal.x_rc_vel
             yrc_cmd = self.get_obj_pwm(goal)
             channels[self.ychannel] = yrc_cmd
             return channels
@@ -252,6 +248,10 @@ class NavigationServer:
     def get_obj_pwm(self, goal):
         """Get PWM to get to desired depth"""
         # half of midpoint
+        if self.object_width < 0:
+            rospy.loginfo('no image logged')
+            return self.pwm_center
+
         odiff = self.framecenter + (self.object_width - self.framecenter) / 2\
                 - self.object_x
         yout = odiff * self.obj_p

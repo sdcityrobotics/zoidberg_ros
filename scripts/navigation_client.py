@@ -36,6 +36,7 @@ class Command():
             self._ac.send_goal(goal)
             rospy.loginfo("Heading change timed out")
 
+
     def set_rc_velocity(self, x_rc_vel, y_rc_vel, target_depth,
                         target_heading, timeout):
         """Set fixed velocities"""
@@ -53,7 +54,7 @@ class Command():
             rospy.loginfo("Velocity set timed out")
 
 
-    def gate_pass(self, x_rc_vel,target_heading, target_depth, timeout):
+    def gate_pass(self, x_rc_vel, target_depth, target_heading, timeout):
         """Set fixed velocities"""
         goal = MoveRobotGoal(actionID='gate_pass',
                              x_rc_vel=x_rc_vel,
