@@ -15,9 +15,10 @@ try:
     #rospy.sleep(2.)
     co.begin()
     # mission specifications
-    #co.dh_change(.2, 270, 10)
+    co.dh_change(.2, 270, 10)
     #co.heading_change(300, 20)
-    co.set_rc_velocity(1600, 1500, .2, 270, 10)
+    is_togate = co.gate_pass(1550, .2, 270, 10)
+    #co.set_rc_velocity(1550, 1500, .2, 270, 10)
 except rospy.ROSInterruptException:
     rospy.loginfo("Program interrupted")
 finally:

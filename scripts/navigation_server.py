@@ -1,4 +1,6 @@
-vigation Server
+#!/usr/bin/env python
+"""
+Navigation Server
 =================
 Provides basic behaviors used to build up a mission. Designed to be interfaced
 by the Navigation client. The server is the helmsman, the client is the
@@ -230,7 +232,7 @@ class NavigationServer:
     def get_depth_pwm(self, goal):
         """Get PWM to get to desired depth"""
         ddiff = goal.target_depth - self.curr_depth
-        if zout > 0:
+        if self.curr_depth < -1:
             rospy.loginfo('Depth sensor is not initialized')
             return self.pwm_center
         zout = ddiff * self.depth_p
