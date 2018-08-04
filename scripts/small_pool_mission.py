@@ -17,8 +17,8 @@ try:
     # mission specifications
     co.dh_change(.2, 270, 10)
     #co.heading_change(300, 20)
-    is_togate = co.gate_pass(1550, .2, 270, 10)
-    #co.set_rc_velocity(1550, 1500, .2, 270, 10)
+    #is_togate = co.gate_pass(1550, .2, 270, 10)
+    co.set_rc_velocity(1550, 1500, 270, .2, 10)
 except rospy.ROSInterruptException:
     rospy.loginfo("Program interrupted")
 finally:

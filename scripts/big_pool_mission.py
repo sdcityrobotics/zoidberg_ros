@@ -10,12 +10,15 @@ from navigation_client import Command
 rospy.init_node('navigation_client')
 co = Command()
 
+#time_gp = 25
+#time_out1 = 30
+#time_gp_extra = 5
+
 target_heading1 = 15.
-#time_out1 = 55
-time_out1 = 30
-time_gp = 25
-time_gp_extra = 5
+time_out1 = 60
 target_depth1 = 1
+
+# 25 degrees off initial heading
 target_heading2 = 359.
 time_out2 = 115
 target_depth2 = 2
@@ -31,15 +34,15 @@ try:
     co.set_rc_velocity(1650, 1500,
                        target_depth1, target_heading1,
                        time_out1)
-    is_togate = co.gate_pass(1650, 1500,
-                             target_depth1, target_heading1,
-                             time_gp)
+    #is_togate = co.gate_pass(1650, 1500,
+                             #target_depth1, target_heading1,
+                             #time_gp)
     # if gate_pass exits cleanly, drive for a bit to pass through gate
-    if is_togate:
-        co.set_rc_velocity(1650, 1500,
-                           target_depth1,
-                           target_heading1,
-                           time_gp_extra)
+    #if is_togate:
+        #co.set_rc_velocity(1650, 1500,
+                           #target_depth1,
+                           #target_heading1,
+                           #time_gp_extra)
 
     # second leg
     co.dh_change(target_depth2, target_heading2, 20)

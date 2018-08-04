@@ -81,6 +81,9 @@ class NavigationServer:
         self.curr_heading = -9999.
 	self.object_x = -9999.
 	self.object_y = -9999.
+        self.object_width = -9999
+        self.object_depth = -9999
+
         self.x_velocity = 9999
         self.y_velocity = 9999
         self.altitude = 9999
@@ -248,7 +251,6 @@ class NavigationServer:
 
     def get_obj_pwm(self, goal):
         """Get PWM to get to desired depth"""
-        self.object_width = object_coords.width
         # half of midpoint
         odiff = self.framecenter + (self.object_width - self.framecenter) / 2\
                 - self.object_x
