@@ -14,14 +14,18 @@ co = Command()
 #time_out1 = 30
 #time_gp_extra = 5
 
-target_heading1 = 15.
+target_heading1 = 151.
 time_out1 = 60
 target_depth1 = 1
 
-# 25 degrees off initial heading
-target_heading2 = 359.
-time_out2 = 115
-target_depth2 = 2
+# 45 degrees off initial heading
+target_heading2 = 195.5
+time_out2 = 110
+target_depth2 = 2.07
+
+target_heading3 = 141.
+time_out3 = 30
+target_depth3 = 2
 
 try:
     # start the mission
@@ -47,6 +51,9 @@ try:
     # second leg
     co.dh_change(target_depth2, target_heading2, 20)
     co.set_rc_velocity(1650, 1500, target_depth2, target_heading2, time_out2)
+
+    co.dh_change(target_depth3, target_heading3, 20)
+    co.set_rc_velocity(1650, 1500, target_depth3, target_heading3, time_out3)
 
 except rospy.ROSInterruptException:
     rospy.loginfo("Program interrupted")
