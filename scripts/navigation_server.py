@@ -105,8 +105,8 @@ class NavigationServer:
 
     def behavior_loop(self, goal, rc_cb, terminate_cb):
         """callbacks provide rc commands and termination condition"""
-        rc_out = rc_cb(goal)
-        is_term = terminate_cb(goal)
+        rc_out = rc_cb(self, goal)
+        is_term = terminate_cb(self, goal)
 
         while not is_term:
             # timeout termination behvior
@@ -124,11 +124,11 @@ class NavigationServer:
             self.rate.sleep()
 
             # set up next loop
-            is_term = terminate_cb(goal)
-            rc_out = rc_cb(goal)
+            is_term = terminate_cb(self, goal)
+            rc_out = rc_cb(self, goal)
 
         # publish a result message when finished
-        if depth_ok and heading_ok:
+        if is_term:
             self.rc_off()
             result = MoveRobotResult(actionID=goal.actionID,
                                      end_heading=self.curr_heading,
@@ -138,12 +138,17 @@ class NavigationServer:
 
     def dh_change(self, goal):
         """ Change to specified depth and heading"""
-        self.behavior_loop(goal, depth_heading_rc, depth_heading_isterm)
+
+        cms = lambda s, g: self.depth_heading_rc(g)
+        is_term = lambda s, g: self.depth_heading_isterm(g)
+        self.behavior_loop(goal,
+                           cms,
+                           is_term)
 
     def set_rcvel(self, goal):
         """Move with constant velocity holding depth and heading"""
         # Do not terminate this behavior, rather it is expected to timeout
-        is_term = lambda g: True
+        is_term = lambda s, g: False
         xrc_cmd = goal.x_rc_vel
         yrc_cmd = goal.y_rc_vel
 
@@ -193,8 +198,8 @@ class NavigationServer:
 
     def depth_heading_isterm(self, goal):
         """Termination condition for heading moveto"""
-        depth_ok = abs(target_depth - self.curr_depth) < self.depth_tol
-        heading_ok = abs(target_heading - self.curr_heading)\
+        depth_ok = abs(goal.target_depth - self.curr_depth) < self.depth_tol
+        heading_ok = abs(goal.target_heading - self.curr_heading)\
                         < self.heading_tol
         return depth_ok and heading_ok
 
