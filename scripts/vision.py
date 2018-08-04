@@ -16,7 +16,7 @@ class VisionTasks:
         #cv2.imshow("dilation", dilation)
         contour = self.findBiggestContour(dilation)
         x, y, w, h = cv2.boundingRect(contour)
-        centerX = x + (w / 4)
+        centerX = x + (w / 2)
         centerY = y + (h / 2)
         if centerX == 0 or centerY == 0 or w == 0:
             centerX = -1
