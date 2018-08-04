@@ -5,7 +5,7 @@ class VisionTasks:
     
     def findGate(self, image):
         th1 = 0
-        th2 = 130
+        th2 = 200
 
         blurred = cv2.blur(image, (3, 3))
         kernel = np.ones((3, 3), np.uint8)
