@@ -80,8 +80,8 @@ class NavigationServer:
         # initilize current state to nonsense values
         self.curr_depth = -1.
         self.curr_heading = -1.
-	self.object_x = -1.
-	self.object_y = -1.
+        self.object_x = -1.
+        self.object_y = -1.
         self.x_velocity = 9999
         self.y_velocity = 9999
         self.altitude = 9999
@@ -285,7 +285,7 @@ class NavigationServer:
         self.object_x = object_coords.x_coord
         self.object_y = object_coords.y_coord
         self.object_width = object_coords.width
-        self.object_depth = object_coords.depth
+        #self.object_depth = object_coords.depth
 
 
     def _set_curr_depth(self, curr_depth):
