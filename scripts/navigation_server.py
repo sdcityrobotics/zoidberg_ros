@@ -82,6 +82,9 @@ class NavigationServer:
         self.curr_heading = -1.
 	self.object_x = -1.
 	self.object_y = -1.
+        self.x_velocity = 9999
+        self.y_velocity = 9999
+        self.altitude = 9999
 
 
     def _set_task(self, goal):
@@ -100,151 +103,100 @@ class NavigationServer:
             rospy.loginfo('%s actionID not recognized'%goal.actionID)
 
 
-    def dh_change(self, goal):
-        """Proportional control to change depth"""
-        target_depth = goal.target_depth
-        target_heading = goal.target_heading
-        depth_ok = False
-        heading_ok = False
+    def behavior_loop(self, goal, rc_cb, terminate_cb):
+        """callbacks provide rc commands and termination condition"""
+        rc_out = rc_cb(goal)
+        is_term = terminate_cb(goal)
 
-        # initialize empty RC command
-        channels = [1500] * 8
-
-        while not (depth_ok and heading_ok):
-            depth_ok = abs(target_depth - self.curr_depth) < self.depth_tol
-            heading_ok = abs(target_heading - self.curr_heading)\
-                         < self.heading_tol
-            # compute proportional controller output
+        while not is_term:
+            # timeout termination behvior
             if self._as.is_preempt_requested():
                 self.rc_off()
-                rospy.loginfo('DH preempted')
+                rospy.loginfo('Timeout preempted')
                 self._as.set_preempted()
                 break
 
-            # compute heading and depth changes
-            zout = self._get_depth_pwm(target_depth)
-            hout = self._get_heading_pwm(target_heading)
-
-            channels[self.zchannel] = zout
-            channels[self.rchannel] = hout
-
-            controlout = OverrideRCIn(channels=channels)
+            controlout = OverrideRCIn(channels=rc_out)
             self.contolp.publish(controlout)
 
             # send command feedback
             self.send_feedback(goal)
             self.rate.sleep()
 
+            # set up next loop
+            is_term = terminate_cb(goal)
+            rc_out = rc_cb(goal)
+
         # publish a result message when finished
         if depth_ok and heading_ok:
             self.rc_off()
             result = MoveRobotResult(actionID=goal.actionID,
-                                     end_heading=goal.target_heading,
-                                     end_depth=goal.target_depth)
+                                     end_heading=self.curr_heading,
+                                     end_depth=self.curr_depth)
             self._as.set_succeeded(result=result)
 
 
+    def dh_change(self, goal):
+        """ Change to specified depth and heading"""
+        self.behavior_loop(goal, depth_heading_rc, depth_heading_isterm)
+
     def set_rcvel(self, goal):
-        """Set a constant velocity to motor"""
-        target_depth = goal.target_depth
-        target_heading = goal.target_heading
+        """Move with constant velocity holding depth and heading"""
+        # Do not terminate this behavior, rather it is expected to timeout
+        is_term = lambda g: True
         xrc_cmd = goal.x_rc_vel
         yrc_cmd = goal.y_rc_vel
 
-        # check that command velocity is resonable
-        if xrc_cmd > self.pwm_center + self.xdiffmax \
-                or xrc_cmd < self.pwm_center - self.xdiffmax:
-            raise(ValueError('x goal velocity must be between %i and %i'%(
-                    self.pwm_center + self.xdiffmax,
-                    self.pwm_center - self.xdiffmax)))
-        if yrc_cmd > self.pwm_center + self.ydiffmax \
-                or yrc_cmd < self.pwm_center - self.ydiffmax:
-            raise(ValueError('y goal velocity must be between %i and %i'%(
-                    self.pwm_center + self.ydiffmax,
-                    self.pwm_center - self.ydiffmax)))
+        def rc_with_vels(self, goal):
+            """Add constant rc commands to depth and heading hold"""
+            channels = self.depth_heading_rc(goal)
+            channels[self.xchannel] = xrc_cmd
+            channels[self.ychannel] = yrc_cmd
+            return channels
 
-        # send command to RC channel
-        channels = [1500] * 8
-        channels[self.xchannel] = xrc_cmd
-        channels[self.ychannel] = yrc_cmd
-
-        while True:
-            if self._as.is_preempt_requested():
-                self.rc_off()
-                rospy.loginfo('RC set preempted')
-                self._as.set_preempted()
-                break
-
-            # calculate heading and depth
-            zout = self._get_depth_pwm(target_depth)
-            hout = self._get_heading_pwm(target_heading)
-
-            channels[self.zchannel] = zout
-            channels[self.rchannel] = hout
-
-            controlout = OverrideRCIn(channels=channels)
-            self.contolp.publish(controlout)
-            self.send_feedback(goal)
-            self.rate.sleep()
-
+        self.behavior_loop(goal, rc_with_vels, is_term)
 
     def gate_pass(self, goal):
-        """Pass through the gate"""
+        """Center on gate untill it reaches a size threshold"""
+        is_term = lambda g: True
+        xrc_cmd = goal.x_rc_vel
+
+        def rc_to_obj(self, goal):
+            """Add constant rc commands to depth and heading hold"""
+            channels = self.depth_heading_rc(goal)
+            channels[self.xchannel] = xrc_cmd
+            yrc_cmd = get_obj_pwm(self, goal)
+            channels[self.ychannel] = yrc_cmd
+            return channels
+
+        def is_term(self, goal):
+            """terminate when the gate is a certain size"""
+            return self.object_width > self.maxwidth
+
+        self.behavior_loop(goal, rc_to_obj, is_term)
+
+
+    def depth_heading_rc(self, goal):
+        """Proportional control to change depth"""
         target_depth = goal.target_depth
         target_heading = goal.target_heading
-        xrc_cmd = goal.x_rc_vel
-        isclose = False  # if true just go for the gate
-        count = 0
-
-        # check that command velocity is resonable
-        if xrc_cmd > self.pwm_center + self.xdiffmax \
-                or xrc_cmd < self.pwm_center - self.xdiffmax:
-            raise(ValueError('x goal velocity must be between %i and %i'%(
-                    self.pwm_center + self.xdiffmax,
-                    self.pwm_center - self.xdiffmax)))
-        if yrc_cmd > self.pwm_center + self.ydiffmax \
-                or yrc_cmd < self.pwm_center - self.ydiffmax:
-            raise(ValueError('y goal velocity must be between %i and %i'%(
-                    self.pwm_center + self.ydiffmax,
-                    self.pwm_center - self.ydiffmax)))
-
-        # send command to RC channel
+        # initialize empty RC command
         channels = [1500] * 8
+        # compute heading and depth changes
+        zout = self.get_depth_pwm(goal)
+        hout = self.get_heading_pwm(goal)
 
-        channels[self.xchannel] = xrc_cmd
+        channels[self.zchannel] = zout
+        channels[self.rchannel] = hout
+        return channels
 
-        while True:
-            if self._as.is_preempt_requested():
-                self.rc_off()
-                rospy.loginfo('Gate pass preempted')
-                self._as.set_preempted()
-                break
 
-            # calculate heading and depth
-            zout = self._get_depth_pwm(target_depth)
-            hout = self._get_heading_pwm(target_heading)
-
-            channels[self.zchannel] = zout
-            channels[self.rchannel] = hout
-
-            if self.object_width > self.maxwidth:
-                isclose = True
-
-            if not isclose:
-                # center on the object
-                yrc_cmd = self._get_obj_pwm()
-                channels[self.ychannel] = yrc_cmd
-            else:
-                channels[self.ychannel] = 1500
-                count += 1
-
-            if count > self.objcycles:
-                break
-
-            controlout = OverrideRCIn(channels=channels)
-            self.contolp.publish(controlout)
-            self.send_feedback(goal)
-            self.rate.sleep()
+    def depth_heading_isterm(self, goal):
+        """Termination condition for heading moveto"""
+        depth_ok = abs(target_depth - self.curr_depth) < self.depth_tol
+        heading_ok = abs(target_heading - self.curr_heading)\
+                        < self.heading_tol
+        return depth_ok and heading_ok
 
 
     def arm(self, is_armed):
@@ -262,6 +214,7 @@ class NavigationServer:
         controlout = OverrideRCIn(channels=channels)
         self.contolp.publish(controlout)
         self.rate.sleep()
+        # send twice to make sure
         controlout = OverrideRCIn(channels=channels)
         self.contolp.publish(controlout)
 
@@ -274,9 +227,9 @@ class NavigationServer:
         self._as.publish_feedback(fb)
 
 
-    def _get_depth_pwm(self, target_depth):
+    def get_depth_pwm(self, goal):
         """Get PWM to get to desired depth"""
-        ddiff = target_depth - self.curr_depth
+        ddiff = goal.target_depth - self.curr_depth
         zout = ddiff * self.depth_p
         # limit output if necassary
         if abs(zout) > self.depth_pmax:
@@ -288,7 +241,7 @@ class NavigationServer:
         return zout
 
 
-    def _get_obj_pwm(self):
+    def get_obj_pwm(self, goal):
         """Get PWM to get to desired depth"""
         odiff = self.framecenter - self.object_x
         yout = odiff * self.obj_p
@@ -301,9 +254,9 @@ class NavigationServer:
         yout += self.pwm_center
         return yout
 
-    def _get_heading_pwm(self, target_heading):
+    def get_heading_pwm(self, goal):
         """Get PWM to get to desired heading"""
-        hdiff = target_heading - self.curr_heading
+        hdiff = goal.target_heading - self.curr_heading
         # handle 0/360 change at magnetic north
         if abs(hdiff) > 180:
             if hdiff < 0:
