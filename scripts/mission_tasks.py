@@ -2,7 +2,6 @@
 import rospy
 import time
 import cv2
-import numpy as np
 from zed_node import ZedListener
 from vision import VisionTasks
 from zoidberg_nav.msg import VISION
