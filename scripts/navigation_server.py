@@ -167,7 +167,7 @@ class NavigationServer:
             """Add constant rc commands to depth and heading hold"""
             channels = self.depth_heading_rc(goal)
             channels[self.xchannel] = xrc_cmd
-            yrc_cmd = get_obj_pwm(self, goal)
+            yrc_cmd = self.get_obj_pwm(goal)
             channels[self.ychannel] = yrc_cmd
             return channels
 
