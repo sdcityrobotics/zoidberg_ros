@@ -33,7 +33,7 @@ class DVLNode:
         ser.open()  # Opens SerialPort
         self.ser = ser  # make serial port persistant
         self.pub = rospy.Publisher('dvl', DVL, queue_size=10)
-        self.rate = rospy.Rate(10)  # 10 Hz
+        self.rate = None
 
 
     def init_dvl(self):
@@ -69,6 +69,7 @@ class DVLNode:
     def publish_dvl(self):
         """Start the publishing of dvl messages"""
         rospy.init_node('dvl_node')
+        self.rate = rospy.Rate(10)  # 10 Hz
         while not rospy.is_shutdown():
             lineRead = self.ser.readline()
             splitLine = lineRead.split(bytes(b','))
@@ -92,8 +93,9 @@ class DVLNode:
             self.ser.read_all()
             # publish current dvl reading
             self.pub.publish(msg)
-            rospy.loginfo(msg)
+            #rospy.loginfo(msg)
             self.rate.sleep()
+        self.close()
 
     def close(self):
         """Close the serial port"""
@@ -112,6 +114,4 @@ if __name__ == '__main__':
         rospy.logerr('Can not connect with DVL')
     except rospy.ROSInterruptException:
         pass
-    # ensure that the COMM port is closed
-    finally:
-        dvl_connection.close()
+    # ensure that the COMM port is closed finally: dvl_connection.close()
