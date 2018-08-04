@@ -27,9 +27,12 @@ class MissionTasks:
         while True:
             try:
                 image = self.zedListener.getImage()
-		if image is not None:
+                depth = self.zedListener.getDepth()
+                if image is not None:
                 	coords = self.processImage(task, image)
-                	self.talk(coords)
+                    img, x, y, w = coords
+                    meanDepth = depth(x, y)
+                	self.talk(coords, meanDepth)
                 self.rate.sleep()
             except rospy.ROSInterruptException:
                 rospy.loginfo("Program interrupted")
@@ -41,15 +44,16 @@ class MissionTasks:
             coords = self.vision.findDice(image)
         return coords
 
-    def talk(self, data):
+    def talk(self, coords, depth):
         #rospy.loginfo(x,y)
         msg = VISION()
-        img, x, y, w = data
+        img, x, y, w = coords
         #cv2.imshow("image", img)
         #cv2.waitKey(1)
         msg.x_coord = x
         msg.y_coord = y
         msg.width = w
+        msg.depth = depth
         self.pub.publish(msg)
 
 if __name__ == '__main__':

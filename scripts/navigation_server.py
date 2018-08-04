@@ -277,9 +277,10 @@ class NavigationServer:
 
     def _set_object_coords(self, object_coords):
         """Set object x and y coordinates"""
-	self.object_x = object_coords.x_coord
-	self.object_y = object_coords.y_coord
-	self.object_width = object_coords.width
+        self.object_x = object_coords.x_coord
+        self.object_y = object_coords.y_coord
+        self.object_width = object_coords.width
+        self.object_depth = object_coords.depth
 
 
     def _set_curr_depth(self, curr_depth):
