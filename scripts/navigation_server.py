@@ -86,6 +86,9 @@ class NavigationServer:
         self.x_velocity = 9999
         self.y_velocity = 9999
         self.altitude = 9999
+        # hacky way to save object depth change
+        self.depth_I = 0.
+        self.depth_Imax = 75
 
 
     def _set_task(self, goal):
@@ -180,16 +183,28 @@ class NavigationServer:
 
     def object_center(self, goal):
         """Center on a object in both height and sway"""
+        self.depth_I = 0.
         def rc_to_obj(self, goal):
             """Add constant rc commands to depth and heading hold"""
-            channels = [1500] * 8
-            channels[self.xchannel] = goal.x_rc_vel
+            channels = self.depth_heading_rc(goal)
+
+            # move to object
             yrc_cmd = self.get_obj_y(goal, False)
-            channels[self.ychannel] = yrc_cmd
             zrc_cmd = self.get_obj_z(goal)
-            channels[self.zchannel] = zrc_cmd
+
+            # an integrated controller
+            self.depth_I += (zrc_cmd - self.pwm_center) * 0.1  # 1/10 Hz
+            # limit depth integral
+            if abs(self.depth_I) > self.depth_Imax:
+                if self.depth_I < 0:
+                    self.depth_I = -self.depth_Imax
+                else:
+                    self.depth_I = self.depth_Imax
+
+            channels[self.xchannel] = goal.x_rc_vel
+            channels[self.ychannel] = yrc_cmd
+            channels[self.zchannel] += self.depth_I
             hout = self.get_heading_pwm(goal)
-            channels[self.rchannel] = hout
             return channels
 
         def is_term(self, goal):
@@ -297,8 +312,8 @@ class NavigationServer:
             rospy.loginfo('no image logged')
             return self.pwm_center
 
-        # object x is up-down
-        odiff = self.framecenter - self.object_x
+        # object y is up-down
+        odiff = self.framecenter - self.object_y
         zout = odiff * self.obj_p
         # limit output if necassary
         if abs(zout) > self.obj_pmax:
