@@ -69,7 +69,8 @@ class NavigationServer:
         gains = rospy.get_param('~object')
         self.obj_p = gains['P']
         self.obj_pmax = gains['Pmax']
-        self.framecenter = gains['framecenter']
+        self.framecenter_x = gains['framecenter_x']
+        self.framecenter_y = gains['framecenter_y']
         self.maxwidth = gains['maxwidth']
         self.objcycles = 50
         self.zchannel = 2
@@ -288,11 +289,11 @@ class NavigationServer:
             return self.pwm_center
 
         if is_gate:
-            odiff = self.framecenter\
-                    + (self.object_width - self.framecenter) / 2\
+            odiff = self.framecenter_x\
+                    + (self.object_width - self.framecenter_x) / 2\
                     - self.object_x
         else:
-            odiff = self.framecenter - self.object_x
+            odiff = self.framecenter_x - self.object_x
 
         yout = odiff * self.obj_p
         # limit output if necassary
@@ -313,7 +314,7 @@ class NavigationServer:
             return self.pwm_center
 
         # object y is up-down
-        odiff = self.framecenter - self.object_y
+        odiff = self.framecenter_y - self.object_y
         zout = odiff * self.obj_p
         # limit output if necassary
         if abs(zout) > self.obj_pmax:
