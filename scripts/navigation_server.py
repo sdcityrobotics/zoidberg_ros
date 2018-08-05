@@ -96,6 +96,8 @@ class NavigationServer:
             self.set_rcvel(goal)
         elif goal.actionID == 'gate_pass':
             self.gate_pass(goal)
+        elif goal.actionID == 'object_center':
+            self.object_center(goal)
         elif goal.actionID == 'arm':
             self.arm(goal.arm)
         elif goal.actionID == 'rc_off':
@@ -166,8 +168,28 @@ class NavigationServer:
             """Add constant rc commands to depth and heading hold"""
             channels = self.depth_heading_rc(goal)
             channels[self.xchannel] = goal.x_rc_vel
-            yrc_cmd = self.get_obj_pwm(goal)
+            yrc_cmd = self.get_obj_y(goal, True)
             channels[self.ychannel] = yrc_cmd
+            return channels
+
+        def is_term(self, goal):
+            """terminate when the gate is a certain size"""
+            return self.object_width > self.maxwidth
+
+        self.behavior_loop(goal, rc_to_obj, is_term)
+
+    def object_center(self, goal):
+        """Center on a object in both height and sway"""
+        def rc_to_obj(self, goal):
+            """Add constant rc commands to depth and heading hold"""
+            channels = [1500] * 8
+            channels[self.xchannel] = goal.x_rc_vel
+            yrc_cmd = self.get_obj_y(goal, False)
+            channels[self.ychannel] = yrc_cmd
+            zrc_cmd = self.get_obj_z(goal)
+            channels[self.zchannel] = zrc_cmd
+            hout = self.get_heading_pwm(goal)
+            channels[self.rchannel] = hout
             return channels
 
         def is_term(self, goal):
@@ -179,8 +201,6 @@ class NavigationServer:
 
     def depth_heading_rc(self, goal):
         """Proportional control to change depth"""
-        target_depth = goal.target_depth
-        target_heading = goal.target_heading
         # initialize empty RC command
         channels = [1500] * 8
         # compute heading and depth changes
@@ -245,15 +265,20 @@ class NavigationServer:
         return zout
 
 
-    def get_obj_pwm(self, goal):
+    def get_obj_y(self, goal, is_gate):
         """Get PWM to get to desired depth"""
         # half of midpoint
         if self.object_width < 0:
             rospy.loginfo('no image logged')
             return self.pwm_center
 
-        odiff = self.framecenter + (self.object_width - self.framecenter) / 2\
-                - self.object_x
+        if is_gate:
+            odiff = self.framecenter\
+                    + (self.object_width - self.framecenter) / 2\
+                    - self.object_x
+        else:
+            odiff = self.framecenter - self.object_x
+
         yout = odiff * self.obj_p
         # limit output if necassary
         if abs(yout) > self.obj_pmax:
@@ -263,6 +288,27 @@ class NavigationServer:
                 yout = self.obj_pmax
         yout += self.pwm_center
         return yout
+
+
+    def get_obj_z(self, goal):
+        """Get PWM to get to desired depth"""
+        # half of midpoint
+        if self.object_width < 0:
+            rospy.loginfo('no image logged')
+            return self.pwm_center
+
+        # object x is up-down
+        odiff = self.framecenter - self.object_x
+        zout = odiff * self.obj_p
+        # limit output if necassary
+        if abs(zout) > self.obj_pmax:
+            if zout < 0:
+                zout = -self.obj_pmax
+            else:
+                zout = self.obj_pmax
+        zout += self.pwm_center
+        return zout
+
 
     def get_heading_pwm(self, goal):
         """Get PWM to get to desired heading"""

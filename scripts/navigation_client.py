@@ -54,7 +54,7 @@ class Command():
             rospy.loginfo("Velocity set timed out")
 
 
-    def gate_pass(self, x_rc_vel, target_depth, target_heading, timeout):
+    def gate_pass(self, x_rc_vel, target_heading, timeout):
         """Set fixed velocities"""
         goal = MoveRobotGoal(actionID='gate_pass',
                              x_rc_vel=x_rc_vel,
@@ -70,6 +70,24 @@ class Command():
             goal = MoveRobotGoal(actionID='rc_off')
             self._ac.send_goal(goal)
             rospy.loginfo("Gate pass set timed out")
+        return is_togate
+
+
+    def object_center(self, x_rc_vel, target_heading, timeout):
+        """Set fixed velocities"""
+        goal = MoveRobotGoal(actionID='object_center',
+                             x_rc_vel=x_rc_vel,
+                             target_heading=target_heading)
+        self._ac.send_goal(goal)
+        to = rospy.Duration(secs=timeout)
+        res = self._ac.wait_for_result(to)
+        is_togate = True
+
+        if not res:
+            is_togate=False
+            goal = MoveRobotGoal(actionID='rc_off')
+            self._ac.send_goal(goal)
+            rospy.loginfo("Object follow timed out")
         return is_togate
 
     def begin(self):
