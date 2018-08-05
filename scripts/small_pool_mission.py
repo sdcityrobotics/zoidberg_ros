@@ -14,9 +14,10 @@ try:
     #rospy.sleep(2.)
     co.begin()
     # mission specifications
-    co.dh_change(.2, 270, 5)
-    co.set_rc_velocity(1525, 1500, .2, 270, 10)
-    co.gate_pass(1500, .2, 10, 50)
+    #co.dh_change(.2, 270, 5)
+    #co.set_rc_velocity(1525, 1500, .2, 270, 10)
+    #co.gate_pass(1500, .2, 10, 50)
+    co.object_center(1500, 10, 50)
 except rospy.ROSInterruptException:
     rospy.loginfo("Program interrupted")
 finally:
