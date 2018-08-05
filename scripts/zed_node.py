@@ -14,8 +14,8 @@ class ZedListener:
         self.image = cv_image
 
     def callbackDepth(self, data):
-        #cv_image = self.bridge.imgmsg_to_cv2(data, "32FC1")
-        self.depth = data
+        cv_image = self.bridge.imgmsg_to_cv2(data, "32FC1")
+        self.depth = cv_image
     
     def listen(self):
         rospy.Subscriber("zed/rgb/image_raw_color", Image, self.callback)

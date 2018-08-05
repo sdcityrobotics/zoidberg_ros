@@ -5,7 +5,7 @@ import cv2
 from zed_node import ZedListener
 from vision import VisionTasks
 from zoidberg_nav.msg import VISION
-
+import numpy as np
 
 class MissionTasks:
     def __init__(self):
@@ -31,7 +31,11 @@ class MissionTasks:
                 if image is not None:
                     coords = self.processImage(task, image)
                     img, x, y, w = coords
-                    meanDepth = depth(y, x)
+                    meanDepth = -1
+                    if depth is not None:
+                        #depthArray = np.asarray(depth)
+                        #meanDepth = depthArray[y,x]
+                        meanDepth = depth[y, x]
                     self.talk(coords, meanDepth)
                 self.rate.sleep()
             except rospy.ROSInterruptException:
