@@ -302,6 +302,8 @@ class NavigationServer:
                 yout = -self.obj_pmax
             else:
                 yout = self.obj_pmax
+        # flip rc output, needed to match rc definitions
+        yout = -yout
         yout += self.pwm_center
         return yout
 
@@ -322,6 +324,8 @@ class NavigationServer:
                 zout = -self.obj_pmax
             else:
                 zout = self.obj_pmax
+        # flip rc output, needed to match rc definitions
+        zout = -zout
         zout += self.pwm_center
         return zout
 
