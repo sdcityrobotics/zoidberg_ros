@@ -19,7 +19,7 @@
         <param name="heading/tolerance" value="2." />
         <param name="vel/xdiffmax" value="200" />
         <param name="vel/ydiffmax" value="200" />
-        <param name="object/P" value=".1" />
+        <param name="object/P" value=".03" />
         <param name="object/Pmax" value="300" />
         <param name="object/framecenter_x" value="640" />
         <param name="object/framecenter_y" value="360" />
