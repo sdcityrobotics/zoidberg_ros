@@ -42,6 +42,3 @@ class VisionTasks:
            biggestContour = max(contoursArray, key=cv2.contourArea)
            # Returns an array of points for the biggest contour found
            return biggestContour
-
-
-
