@@ -1,4 +1,4 @@
-# zoidberg_nav
+# zoidberg_ros
 navigation for zoidberg
 
 Install
@@ -33,7 +33,7 @@ Once installed, this package defines a number of ROS messages related to
  navigation and a few ROS nodes. A launch file is used to set up navigation.
 
 ```
-roslaunch zoidberg_nav zoidberg_nav.launch
+roslaunch zoidberg_ros zoidberg_ros.launch
 ```
 
 This sets up a node "helm" that sits around and waits for commands. This command
@@ -53,11 +53,11 @@ This can be set to 1 using the get command.
 ```
 rosrun mavros mavparam -n apm set SYSID_MYGCS 1
 ```
-The above commands only work if zoidberg_nav is launched and running.
+The above commands only work if zoidberg_ros is launched and running.
 
 Currently the script
 ```
-rosrun zoidberg_nav navigation_client.py
+rosrun zoidberg_ros navigation_client.py
 ```
 
 is used to send commands. The current mission is meant to turn to a heading. If

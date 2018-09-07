@@ -1,44 +1,67 @@
 #!/usr/bin/env python
+import rospy
+import time
 import cv2
+from zed_node import ZedListener
+from vision_tasks import VisionTasks
+from zoidberg_ros.msg import Vision
 import numpy as np
 
-class VisionTasks:
-    
-    def findGate(self, image):
-        th1 = 0
-        th2 = 200
+class MissionTasks:
+    def __init__(self):
+        self.zedListener = ZedListener()
+	self.zedListener.listen()
+        self.vision = VisionTasks()
+        self.pub = rospy.Publisher('objectCoordinates', Vision, queue_size=10)
+        self.rate = None
 
-        blurred = cv2.blur(image, (3, 3))
-        kernel = np.ones((3, 3), np.uint8)
-        erosion = cv2.erode(blurred, kernel, iterations=1)
-        edges = cv2.Canny(erosion, th1, th2)
+    def missionControl(self):
+        # THIS CAN BE MOVED TO MAIN CONTROL IF NEEDED
+        #find gate
+        self.doTask("gate") #change time as needed
+        #find dice
+        #self.doTask(300, "dice") #change time as needed
 
-        dilation = cv2.dilate(edges, kernel, iterations=2)
-        #cv2.imshow("dilation", dilation)
-        contour = self.findBiggestContour(dilation)
-        x, y, w, h = cv2.boundingRect(contour)
-        centerX = x + (w / 2)
-        centerY = y + (h / 2)
-        if centerX == 0 or centerY == 0 or w == 0:
-            centerX = -1
-            centerY = -1
-            w = -1
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
-        cv2.putText(image, "X: " + format(centerX), (int(x) - 60, int(y) + 50), font, 0.5, (155, 250, 55), 2,
-                cv2.LINE_AA)
-        cv2.putText(image, "Y: " + format(centerY), (int(x) - 60, int(y) + 70), font, 0.5, (155, 255, 155), 2,
-               cv2.LINE_AA)
-        # display
-        return (image, centerX, centerY, w)
+    def doTask(self, task):
+        self.rate = rospy.Rate(10)  # 10 Hz
+        while True:
+            try:
+                image = self.zedListener.getImage()
+                depth = self.zedListener.getDepth()
+                if image is not None:
+                    coords = self.processImage(task, image)
+                    img, x, y, w = coords
+                    meanDepth = -1
+                    if depth is not None:
+                        meanDepth = depth[y, x]
+                    self.talk(coords, meanDepth)
+                self.rate.sleep()
+            except rospy.ROSInterruptException:
+                rospy.loginfo("Program interrupted")
 
+    def processImage(self, task, image):
+        if task == "gate":
+            coords = self.vision.findGate(image)
+        elif task == "dice":
+            coords = self.vision.findDice(image)
+        return coords
 
-    def findBiggestContour(self, mask):
-       # Contours
-       contoursArray = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
-       # This code will execute if at least one contour was found
-       if len(contoursArray) > 0:
-           # Find the biggest contour
-           biggestContour = max(contoursArray, key=cv2.contourArea)
-           # Returns an array of points for the biggest contour found
-           return biggestContour
+    def talk(self, coords, depth):
+        msg = Vision()
+        img, x, y, w = coords
+        cv2.imshow("image", img)
+        cv2.waitKey(1)
+        msg.px_coord = x
+        msg.py_coord = y
+        msg.delta_px = w
+        msg.depth = depth
+        rospy.loginfo(msg)
+        self.pub.publish(msg)
+
+if __name__ == '__main__':
+    rospy.init_node('mission_tasks')
+    mission = MissionTasks()
+    try:
+        mission.missionControl()
+    except rospy.ROSInterruptException:
+        pass

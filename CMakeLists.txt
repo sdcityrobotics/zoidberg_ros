@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(zoidberg_nav)
+project(zoidberg_ros)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -56,8 +56,8 @@ add_message_files(
     DIRECTORY msg
     FILES
     DVL.msg
-    VISION.msg
-#   DepthChange.msg
+    Vision.msg
+    Navigation.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -68,13 +68,13 @@ add_message_files(
 # )
 
 ## Generate actions in the 'action' folder
-add_action_files(
-    DIRECTORY action
-    FILES
-    MoveRobot.action
+#add_action_files(
+#DIRECTORY action
+#FILES
+#MoveRobot.action
 #   ChangeDepth.action
 #   ChangeHeading.action
- )
+#)
 
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
@@ -114,7 +114,7 @@ add_action_files(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES zoidberg_nav
+#  LIBRARIES zoidberg_ros
    CATKIN_DEPENDS mavros roscpp rospy std_msgs message_runtime
 #  DEPENDS system_lib
 )
@@ -132,7 +132,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/zoidberg_nav.cpp
+#   src/${PROJECT_NAME}/zoidberg_ros.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -143,7 +143,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/zoidberg_nav_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/zoidberg_ros.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -200,7 +200,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_zoidberg_nav.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_zoidberg_ros.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

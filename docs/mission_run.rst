@@ -5,7 +5,7 @@ cd catkin_workspace
 catkin_make
 ```
 
-read the zoidberg_nav.launch file. This shows you proportionality constants and
+read the zoidberg_ros.launch file. This shows you proportionality constants and
 the pixhawk channels being used for mission stuff. If a channel is being used,
 it is remapped from /apm to its own channel. For instance,
 
@@ -19,10 +19,10 @@ are using for all navigation purposes. Please check that all the channel mapppin
 are correct, i.e. the depth sensor we are actually using is publishing to this
 channel.
 
-Launch zoidberg_nav server
+Launch zoidberg_ros server
 
 ```
-roslaunch zoidberg_nav zoidberg_nav.launch
+roslaunch zoidberg_ros zoidberg_ros.launch
 ```
 
 This populates a lot of rostopics and rosservices. These can be seen with the command
@@ -43,8 +43,8 @@ are in fact being sent from the Pixhawk motor controller.
 Use rosrun to run a mission. The file basic_mission is a good template
 
 ```
-rosrun zoidberg_nav basic_mission.py
+rosrun zoidberg_ros basic_mission.py
 ```
 
-This file can be found in the zoidberg_nav/scripts folder. It shows all of the
+This file can be found in the zoidberg_ros/scripts folder. It shows all of the
 avalible behaviors implimented on the robot, and these can be mixed and matched.

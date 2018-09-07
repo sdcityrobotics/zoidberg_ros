@@ -7,15 +7,13 @@ with control system on Pixhawk to make this happen.
 """
 
 import roslib
-roslib.load_manifest('zoidberg_nav')
+roslib.load_manifest('zoidberg_ros')
 import rospy
 import actionlib
 import time
 from math import copysign
 
-from zoidberg_nav.msg import (MoveRobotAction, MoveRobotResult,
-                              MoveRobotFeedback)
-from zoidberg_nav.msg import DVL, VISION
+from zoidberg_ros.msg import DVL, Vision
 from std_msgs.msg import Float64, Header
 from sensor_msgs.msg import FluidPressure
 from mavros_msgs.msg import OverrideRCIn

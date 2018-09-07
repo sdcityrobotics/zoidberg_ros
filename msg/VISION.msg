@@ -1,4 +1,0 @@
-float64 x_coord
-float64 y_coord
-float64 width
-float64 depth
