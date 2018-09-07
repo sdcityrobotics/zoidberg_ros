@@ -14,14 +14,14 @@ message.
 """
 
 import roslib
-roslib.load_manifest('zoidberg_nav')
+roslib.load_manifest('zoidberg_ros')
 import rospy
 import actionlib
 import time
 
-from zoidberg_nav.msg import (MoveRobotAction, MoveRobotResult,
+from zoidberg_ros.msg import (MoveRobotAction, MoveRobotResult,
                               MoveRobotFeedback)
-from zoidberg_nav.msg import DVL, VISION
+from zoidberg_ros.msg import DVL, Vision
 from std_msgs.msg import Float64, Header
 from sensor_msgs.msg import FluidPressure
 from mavros_msgs.msg import OverrideRCIn
@@ -45,7 +45,7 @@ class NavigationServer:
         # channels where the server looks for necassary information
         rospy.Subscriber("/depth", FluidPressure, self._set_curr_depth)
         rospy.Subscriber("/heading", Float64, self._set_curr_heading)
-	rospy.Subscriber("/objectCoordinates", VISION, self._set_object_coords)
+	rospy.Subscriber("/objectCoordinates", Vision, self._set_object_coords)
         # channels where the server publishes control commands
         self.contolp = rospy.Publisher("/control",
                                        OverrideRCIn,

@@ -10,7 +10,7 @@ import serial, time
 # Can be Downloaded from this Link
 # https://pypi.python.org/pypi/pyserial
 import rospy
-from zoidberg_nav.msg import DVL
+from zoidberg_ros.msg import DVL
 
 class DVLNode:
     """

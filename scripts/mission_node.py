@@ -6,7 +6,7 @@ Provides a framwork to build basic behaviors used to make up a mission.
 """
 
 import roslib
-roslib.load_manifest('zoidberg_nav')
+roslib.load_manifest('zoidberg_ros')
 import rospy
 import time
 

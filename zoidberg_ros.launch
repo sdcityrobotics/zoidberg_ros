@@ -9,31 +9,25 @@
         <param name="gcs_url" value="udp://:14556@127.0.0.1:14550" />
     </node>
 
-    <node name="helm" pkg="zoidberg_nav" type="navigation_server.py" respawn="true">
+    <node name="guidance" pkg="zoidberg_ros" type="guidance_node.py" respawn="true">
         <param name="controller_frequency" value="10.0" />
         <param name="depth/P" value="600.0" />
         <param name="depth/Pmax" value="300." />
-        <param name="depth/tolerance" value=".05" />
         <param name="heading/P" value="10.0" />
         <param name="heading/Pmax" value="200." />
-        <param name="heading/tolerance" value="2." />
-        <param name="vel/xdiffmax" value="200" />
-        <param name="vel/ydiffmax" value="200" />
-        <param name="object/P" value=".03" />
-        <param name="object/Pmax" value="300" />
-        <param name="object/framecenter_x" value="640" />
-        <param name="object/framecenter_y" value="360" />
-        <param name="object/maxwidth" value="5000" />
-
+        <param name="xvel/P" value="10" />
+        <param name="xvel/Pmax" value="200" />
+        <param name="yvel/P" value="10" />
+        <param name="yvel/Pmax" value="200" />
     </node>
 
-    <node name="pext" pkg="zoidberg_nav" type="pressure_node.py" respawn="true" >
+    <node name="pext" pkg="zoidberg_ros" type="pressure_node.py" respawn="true" >
     </node>
 
-    <node name="objects" pkg="zoidberg_nav" type="mission_tasks.py" respawn="true" >
+    <node name="vision" pkg="zoidberg_ros" type="vision_node.py" respawn="true" >
     </node>
 
     <node pkg="rosbag" type="record" name="zoidberg_bag"
-              args="-o zoidberg_bag /rcout /dvl /control /depth /heading /zed/rgd/image_raw_color"
+              args="-o zoidberg_bag /rcout /dvl /control /depth /heading"
     />
 </launch>

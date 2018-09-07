@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 import roslib
-roslib.load_manifest('zoidberg_nav')
+roslib.load_manifest('zoidberg_ros')
 import rospy
 import actionlib
 import time
 
 from std_msgs.msg import String, Header
 from mavros_msgs.msg import State
-from zoidberg_nav.msg import MoveRobotAction, MoveRobotGoal
+from zoidberg_ros.msg import MoveRobotAction, MoveRobotGoal
 
 class Command():
     """Execute basic navigation commands"""
