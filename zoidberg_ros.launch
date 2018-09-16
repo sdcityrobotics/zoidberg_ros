@@ -10,7 +10,6 @@
     </node>
 
     <node name="guidance" pkg="zoidberg_ros" type="guidance_node.py" respawn="true">
-        <param name="controller_frequency" value="10.0" />
         <param name="depth/P" value="600.0" />
         <param name="depth/Pmax" value="300." />
         <param name="heading/P" value="10.0" />
