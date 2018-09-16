@@ -57,7 +57,7 @@ add_message_files(
     FILES
     DVL.msg
     Vision.msg
-    Navigation.msg
+    VehicleState.msg
 )
 
 ## Generate services in the 'srv' folder

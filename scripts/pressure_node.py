@@ -6,6 +6,7 @@ Read pressure data
 read scaledpressure2 from the pyhawk
 """
 
+from __future__ import print_function, division
 import rospy
 from pymavlink import mavutil
 from sensor_msgs.msg import FluidPressure

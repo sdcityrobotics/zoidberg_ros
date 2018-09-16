@@ -6,6 +6,7 @@ Doppler velocity log interface node
 This script creates a ROS node which published to the /dvl topic.
 """
 
+from __future__ import print_function, division
 import serial, time
 # Can be Downloaded from this Link
 # https://pypi.python.org/pypi/pyserial
