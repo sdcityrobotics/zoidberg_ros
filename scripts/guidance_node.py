@@ -25,14 +25,14 @@ class Guidance:
         self.current_state = None
         # channel where guidance listens for relevant information
         rospy.Subscriber("/navigation",
-                         zoidberg_ros.msg.State,
-                         self._set_curr_navigation)
+                         zoidberg_ros.msg.VehicleState,
+                         self._set_curr_state)
         rospy.Subscriber("/guidance",
-                         zoidberg_ros.msg.State,
+                         zoidberg_ros.msg.VehicleState,
                          self._set_curr_guidance)
         # guidance publishes control commands
         self.contolp = rospy.Publisher("/control",
-                                       mavros_msgs.msg.OverrideRCIn,
+                                       OverrideRCIn,
                                        queue_size=10)
         # publish comand rate, Hertz
         self.rate = rospy.Rate(10)
@@ -70,7 +70,7 @@ class Guidance:
             channels[self.xchannel] = self.get_xvelocity_pwm()
             channels[self.ychannel] = self.get_yvelocity_pwm()
             # send message to pixhawk
-            cmd = mavros_msgs.msg.OverrideRCIn(channels=channels)
+            cmd = OverrideRCIn(channels=channels)
             # log control message and publish it
             rospy.loginfo(cmd)
             self.contolp.publish(cmd)
@@ -79,6 +79,9 @@ class Guidance:
 
     def get_heading_pwm(self):
         """Get PWM to get to desired heading"""
+        if self.current_state is None:
+            rospy.loginfo('compass is not initialized')
+            return self.pwm_center
         hdiff = self.desired_state.target_heading - self.current_state.curr_heading
         # handle 0/360 change at magnetic north
         if abs(hdiff) > 180:
@@ -97,10 +100,10 @@ class Guidance:
 
     def get_depth_pwm(self):
         """Get PWM to get to desired depth"""
-        ddiff = self.desired_state.target_depth - self.current_state.curr_depth
-        if self.curr_depth < -1:
+        if self.current_state is None or self.current_state.curr_depth < -1:
             rospy.loginfo('Depth sensor is not initialized')
             return self.pwm_center
+        ddiff = self.desired_state.target_depth - self.current_state.curr_depth
         zout = ddiff * self.depth_p
         # limit output if necassary
         if abs(zout) > self.depth_pmax:
@@ -115,6 +118,9 @@ class Guidance:
         This behavior does not currently impliment feedback (from DVL) and
         is an approximation at best
         """
+        if self.desired_state is None:
+            rospy.loginfo('Desired state is not initialized')
+            return self.pwm_center
         # This has no measurement imput !
         vxout = self.vx_p * self.desired_state.vx
         # limit output if necassary
@@ -130,6 +136,9 @@ class Guidance:
         This behavior does not currently impliment feedback (from DVL) and
         is an approximation at best
         """
+        if self.desired_state is None:
+            rospy.loginfo('Desired state is not initialized')
+            return self.pwm_center
         # This has no measurement imput !
         vyout = self.vy_p * self.desired_state.vy
         # limit output if necassary
@@ -152,6 +161,6 @@ if __name__ == '__main__':
     server = Guidance()
     # this try block taken from rospy tutorials for talker.py
     try:
-        Guidance.spin()
+        server.spin()
     except rospy.ROSInterruptException:
         pass
