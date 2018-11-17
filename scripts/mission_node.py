@@ -34,12 +34,16 @@ class Mission:
         # pixhawk communication
         s1 = rospy.ServiceProxy('/apm/set_stream_rate', StreamRate)
         s1(stream_id=0, message_rate=10, on_off=True)
-        #self.mode_setter = rospy.ServiceProxy('/apm/set_mode', SetMode)
+        self.mode_setter = rospy.ServiceProxy('/apm/set_mode', SetMode)
         self.armer = rospy.ServiceProxy('/apm/cmd/arming', CommandBool)
 
     def arm(self, is_armed):
         """Change the arm state of vehicle, set to Boolean value"""
         self.armer(value=is_armed)
+
+    def change_mode(self, mode_string):
+        """Change the arm state of vehicle, set to Boolean value"""
+        self.mode_setter(base_mode=0, custom_mode=mode_string)
 
     def do(self, desired_state, isterm_cb, timeout, guidance_cb=None):
         """callbacks provide termination condition and can modify guidance"""
